@@ -1,37 +1,23 @@
 {
-	"name": "live-server",
-	"displayName": "Live Preview",
-	"version": "0.0.1",
-	"private": false,
-	"description": "Hosts a local server in your workspace for you to preview your webpages on.",
-	"keywords": [
-		"land"
+	"activationEvents": [
+		"onWebviewPanel:browserPreview",
+		"onTaskType:Live Preview"
 	],
-	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/LandLivePreview#readme",
+	"aiKey": "AIF-d9b70cd4-b9f9-4d70-929b-a071c400b217",
+	"author": {
+		"email": "Land@PlayForm.Cloud",
+		"name": "🌆 — Land —",
+		"url": "HTTPS://Land.PlayForm.Cloud"
+	},
 	"bugs": {
 		"url": "HTTPS://GitHub.Com/CodeEditorLand/LandLivePreview/issues"
 	},
-	"repository": {
-		"type": "git",
-		"url": "git+HTTPS://github.com/CodeEditorLand/LandLivePreview.git"
-	},
-	"license": "SEE LICENSE IN LICENSE",
-	"author": {
-		"name": "🌆 — Land —",
-		"email": "Land@PlayForm.Cloud",
-		"url": "HTTPS://Land.PlayForm.Cloud"
-	},
-	"type": "module",
-	"main": "./out/extension.js",
-	"scripts": {
-		"Document": "Document 'Source/**/*.ts'",
-		"build-preview": "npx webpack-cli --mode development",
-		"compile": "node build/tools/codicon_copy.js && tsc -p ./",
-		"patch-prerelease": "node ./scripts/applyPatchForPrerelease.js",
-		"prepublishOnly": "Build 'Source/**/*.ts'",
-		"validate-stable": "node ./scripts/validateStable.js",
-		"webpack": "webpack --mode development",
-		"webpack-dev": "webpack --mode development --watch"
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"description": "Live Preview runs a server to host workspace files.",
+			"supported": false
+		},
+		"virtualWorkspaces": false
 	},
 	"contributes": {
 		"commands": [
@@ -282,15 +268,12 @@
 			}
 		]
 	},
-	"activationEvents": [
-		"onWebviewPanel:browserPreview",
-		"onTaskType:Live Preview"
-	],
 	"dependencies": {
 		"mime": "4.0.3",
 		"url": "0.11.3",
 		"ws": "8.17.0"
 	},
+	"description": "Hosts a local server in your workspace for you to preview your webpages on.",
 	"devDependencies": {
 		"@playform/build": "0.0.7",
 		"@playform/document": "0.0.6",
@@ -302,18 +285,35 @@
 		"sinon": "17.0.1",
 		"ts-loader": "9.5.1"
 	},
+	"displayName": "Live Preview",
+	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/LandLivePreview#readme",
+	"icon": "icon.png",
+	"keywords": [
+		"land"
+	],
+	"l10n": "./l10n",
+	"license": "SEE LICENSE IN LICENSE",
+	"main": "./out/extension.js",
+	"name": "live-server",
+	"preview": true,
+	"private": false,
 	"publishConfig": {
 		"access": "public"
 	},
-	"icon": "icon.png",
-	"preview": true,
-	"aiKey": "AIF-d9b70cd4-b9f9-4d70-929b-a071c400b217",
-	"capabilities": {
-		"untrustedWorkspaces": {
-			"description": "Live Preview runs a server to host workspace files.",
-			"supported": false
-		},
-		"virtualWorkspaces": false
+	"repository": {
+		"type": "git",
+		"url": "git+HTTPS://github.com/CodeEditorLand/LandLivePreview.git"
 	},
-	"l10n": "./l10n"
+	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
+		"build-preview": "npx webpack-cli --mode development",
+		"compile": "node build/tools/codicon_copy.js && tsc -p ./",
+		"patch-prerelease": "node ./scripts/applyPatchForPrerelease.js",
+		"prepublishOnly": "Build 'Source/**/*.ts'",
+		"validate-stable": "node ./scripts/validateStable.js",
+		"webpack": "webpack --mode development",
+		"webpack-dev": "webpack --mode development --watch"
+	},
+	"type": "module",
+	"version": "0.0.1"
 }
