@@ -295,7 +295,7 @@
 		"@playform/build": "0.0.7",
 		"@playform/document": "0.0.6",
 		"@types/mime": "3.0.4",
-		"@types/node": "20.12.7",
+		"@types/node": "20.12.10",
 		"@types/sinon": "17.0.3",
 		"@types/ws": "8.5.10",
 		"esbuild": "0.20.2",
