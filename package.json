@@ -1,338 +1,292 @@
 {
-  "name": "live-server",
-  "displayName": "Live Preview",
-  "description": "Hosts a local server in your workspace for you to preview your webpages on.",
-  "version": "0.4.13",
-  "preview": true,
-  "aiKey": "AIF-d9b70cd4-b9f9-4d70-929b-a071c400b217",
-  "publisher": "ms-vscode",
-  "icon": "icon.png",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/microsoft/vscode-livepreview"
-  },
-  "capabilities": {
-    "virtualWorkspaces": false,
-    "untrustedWorkspaces": {
-      "supported": false,
-      "description": "Live Preview runs a server to host workspace files."
-    }
-  },
-  "engines": {
-    "vscode": "^1.80.0"
-  },
-  "bugs": {
-    "url": "https://github.com/microsoft/vscode-livepreview/issues"
-  },
-  "categories": [
-    "Other"
-  ],
-  "keywords": [
-    "html",
-    "preview",
-    "live",
-    "browser",
-    "reload",
-    "refresh",
-    "livepreview"
-  ],
-  "activationEvents": [
-    "onWebviewPanel:browserPreview",
-    "onTaskType:Live Preview"
-  ],
-  "l10n": "./l10n",
-  "main": "./out/extension.js",
-  "contributes": {
-    "commands": [
-      {
-        "command": "livePreview.start",
-        "title": "%commands.startServer%",
-        "category": "%commands.category%"
-      },
-      {
-        "command": "livePreview.start.preview.atFile",
-        "title": "%commands.showPreview%",
-        "category": "%commands.category%",
-        "icon": "$(open-preview)"
-      },
-      {
-        "command": "livePreview.start.debugPreview.atFile",
-        "title": "%commands.showDebugPreview%",
-        "category": "%commands.category%",
-        "icon": "$(debug-alt)"
-      },
-      {
-        "command": "livePreview.start.externalPreview.atFile",
-        "title": "%commands.showPreviewExternalBrowser%",
-        "category": "%commands.category%"
-      },
-      {
-        "command": "livePreview.start.externalDebugPreview.atFile",
-        "title": "%commands.showDebugPreviewExternalBrowser%",
-        "category": "%commands.category%",
-        "icon": "$(debug-alt)"
-      },
-      {
-        "command": "livePreview.start.internalPreview.atFile",
-        "title": "%commands.showPreviewInternalBrowser%",
-        "category": "%commands.category%"
-      },
-      {
-        "command": "livePreview.setDefaultOpenFile",
-        "title": "%commands.openAutomaticallyOnServerStart%",
-        "category": "%commands.category%"
-      },
-      {
-        "command": "livePreview.runServerLoggingTask",
-        "title": "%commands.runServerLoggingTask%",
-        "category": "%commands.category%"
-      },
-      {
-        "command": "livePreview.end",
-        "title": "%commands.stopServer%",
-        "category": "%commands.category%"
-      },
-      {
-        "command": "livePreview.start.preview.atFileString",
-        "title": "%commands.startServerAtFileString%",
-        "category": "%commands.category%"
-      }
-    ],
-    "menus": {
-      "editor/title": [
-        {
-          "command": "livePreview.start.preview.atFile",
-          "when": "editorLangId == html && !notebookEditorFocused",
-          "group": "navigation"
-        }
-      ],
-      "explorer/context": [
-        {
-          "command": "livePreview.start.preview.atFile",
-          "when": "resourceLangId == html",
-          "group": "1_livepreview@1"
-        },
-        {
-          "command": "livePreview.setDefaultOpenFile",
-          "when": "resourceLangId == html",
-          "group": "1_livepreview@2"
-        }
-      ],
-      "editor/context": [
-        {
-          "command": "livePreview.start.preview.atFile",
-          "when": "resourceLangId == html",
-          "group": "1_livepreview@1"
-        },
-        {
-          "command": "livePreview.setDefaultOpenFile",
-          "when": "resourceLangId == html",
-          "group": "1_livepreview@2"
-        }
-      ],
-      "commandPalette": [
-        {
-          "command": "livePreview.start",
-          "when": "!LivePreviewServerOn"
-        },
-        {
-          "command": "livePreview.start.preview.atFile",
-          "when": "false"
-        },
-        {
-          "command": "livePreview.start.preview.atFileString",
-          "when": "false"
-        },
-        {
-          "command": "livePreview.start.debugPreview.atFile",
-          "when": "false"
-        },
-        {
-          "command": "livePreview.start.internalPreview.atFile",
-          "when": "editorLangId == html && !notebookEditorFocused",
-          "group": "1_livepreview"
-        },
-        {
-          "command": "livePreview.start.externalPreview.atFile",
-          "when": "editorLangId == html && !notebookEditorFocused",
-          "group": "1_livepreview"
-        },
-        {
-          "command": "livePreview.start.externalPreview.atFile",
-          "when": "activeWebviewPanelId == 'browserPreview'",
-          "group": "1_livepreview"
-        },
-        {
-          "command": "livePreview.start.externalDebugPreview.atFile",
-          "when": "editorLangId == html && !notebookEditorFocused",
-          "group": "1_livepreview"
-        },
-        {
-          "command": "livePreview.start.externalDebugPreview.atFile",
-          "when": "activeWebviewPanelId == 'browserPreview'",
-          "group": "1_livepreview"
-        },
-        {
-          "command": "livePreview.end",
-          "when": "LivePreviewServerOn",
-          "group": "1_livepreview"
-        },
-        {
-          "command": "livePreview.setDefaultOpenFile",
-          "when": "false"
-        }
-      ]
-    },
-    "configuration": {
-      "title": "Live Preview",
-      "properties": {
-        "livePreview.portNumber": {
-          "type": "number",
-          "default": 3000,
-          "minimum": 0,
-          "maximum": 65535,
-          "description": "%settings.portNumber%"
-        },
-        "livePreview.serverKeepAliveAfterEmbeddedPreviewClose": {
-          "type": "number",
-          "default": 3,
-          "minimum": 0,
-          "maximum": 20,
-          "description": "%settings.serverKeepAliveAfterEmbeddedPreviewClose%"
-        },
-        "livePreview.previewDebounceDelay": {
-          "type": "number",
-          "default": 50,
-          "minimum": 0,
-          "description": "%settings.previewDebounceDelay%"
-        },
-        "livePreview.showServerStatusNotifications": {
-          "type": "boolean",
-          "default": false,
-          "description": "%settings.showServerStatusNotifications%"
-        },
-        "livePreview.autoRefreshPreview": {
-          "enum": [
-            "On All Changes in Editor",
-            "On Changes to Saved Files",
-            "Never"
-          ],
-          "default": "On All Changes in Editor",
-          "description": "%settings.autoRefreshPreview%"
-        },
-        "livePreview.openPreviewTarget": {
-          "enum": [
-            "Embedded Preview",
-            "External Browser"
-          ],
-          "default": "Embedded Preview",
-          "description": "%settings.openPreviewTarget%"
-        },
-        "livePreview.notifyOnOpenLooseFile": {
-          "type": "boolean",
-          "default": true,
-          "description": "%settings.notifyOnOpenLooseFile%"
-        },
-        "livePreview.tasks.runTaskWithExternalPreview": {
-          "type": "boolean",
-          "default": false,
-          "description": "%settings.tasks.runTaskWithExternalPreview%"
-        },
-        "livePreview.defaultPreviewPath": {
-          "type": "string",
-          "default": "",
-          "description": "%settings.defaultPreviewPath%",
-          "scope": "resource"
-        },
-        "livePreview.serverRoot": {
-          "type": "string",
-          "default": "",
-          "description": "%settings.serverRoot%",
-          "scope": "resource"
-        },
-        "livePreview.debugOnExternalPreview": {
-          "type": "boolean",
-          "default": false,
-          "description": "%settings.debugOnExternalPreview%"
-        },
-        "livePreview.hostIP": {
-          "type": "string",
-          "default": "127.0.0.1",
-          "description": "%settings.hostIP%"
-        },
-        "livePreview.customExternalBrowser": {
-          "enum": [
-            "Edge",
-            "Chrome",
-            "Firefox",
-            "Default"
-          ],
-          "default": "Default",
-          "description": "%settings.customExternalBrowser%"
-        },
-        "livePreview.httpHeaders": {
-          "type": "object",
-          "default": {
-            "Accept-Ranges": "bytes"
-          },
-          "description": "%settings.httpHeaders%"
-        }
-      }
-    },
-    "taskDefinitions": [
-      {
-        "type": "Live Preview",
-        "properties": {
-          "workspacePath": {
-            "type": "string",
-            "description": "%tasks.workspacePathDesc%"
-          }
-        }
-      }
-    ]
-  },
-  "scripts": {
-    "vscode:prepublish": "webpack --mode production",
-    "webpack": "webpack --mode development",
-    "webpack-dev": "webpack --mode development --watch",
-    "build-preview": "npx webpack-cli --mode development",
-    "patch-prerelease": "node ./scripts/applyPatchForPrerelease.js",
-    "validate-stable": "node ./scripts/validateStable.js",
-    "compile": "node build/tools/codicon_copy.js && tsc -p ./",
-    "watch": "node build/tools/codicon_copy.js && tsc -watch -p ./",
-    "format": "prettier ./{src,media}/**/*.{ts,css,html,js} --write",
-    "test": "node ./out/test/runTest.js"
-  },
-  "devDependencies": {
-    "@types/mime": "^3.0.1",
-    "@types/mocha": "^9.0.0",
-    "@types/node": "^18.7.18",
-    "@types/sinon": "7.0.11",
-    "@types/vscode": "^1.74.0",
-    "@types/ws": "^8.5.3",
-    "@typescript-eslint/eslint-plugin": "^5.37.0",
-    "@typescript-eslint/parser": "^5.37.0",
-    "@vscode/test-electron": "^1.6.1",
-    "clean-webpack-plugin": "^4.0.0",
-    "copy-webpack-plugin": "^11.0.0",
-    "esbuild": "^0.15.7",
-    "eslint": "^8.23.1",
-    "eslint-plugin-header": "^3.1.1",
-    "mocha": "^9.1.3",
-    "prettier-eslint": "^13.0.0",
-    "prettier-eslint-cli": "^7.1.0",
-    "sinon": "9.0.0",
-    "ts-loader": "^9.3.1",
-    "typescript": "^4.8.3",
-    "webpack": "^5.76.0",
-    "webpack-cli": "^4.10.0"
-  },
-  "dependencies": {
-    "@types/express": "^4.17.17",
-    "@vscode/codicons": "^0.0.32",
-    "mime": "^3.0.0",
-    "url": "^0.11.0",
-    "vscode-extension-telemetry": "^0.4.5",
-    "ws": "^8.8.1"
-  }
+	"name": "live-server",
+	"displayName": "Live Preview",
+	"description": "Hosts a local server in your workspace for you to preview your webpages on.",
+	"main": "./out/extension.js",
+	"scripts": {
+		"build-preview": "npx webpack-cli --mode development",
+		"compile": "node build/tools/codicon_copy.js && tsc -p ./",
+		"patch-prerelease": "node ./scripts/applyPatchForPrerelease.js",
+		"validate-stable": "node ./scripts/validateStable.js",
+		"webpack": "webpack --mode development",
+		"webpack-dev": "webpack --mode development --watch"
+	},
+	"contributes": {
+		"commands": [
+			{
+				"category": "%commands.category%",
+				"command": "livePreview.start",
+				"title": "%commands.startServer%"
+			},
+			{
+				"category": "%commands.category%",
+				"command": "livePreview.start.preview.atFile",
+				"icon": "$(open-preview)",
+				"title": "%commands.showPreview%"
+			},
+			{
+				"category": "%commands.category%",
+				"command": "livePreview.start.debugPreview.atFile",
+				"icon": "$(debug-alt)",
+				"title": "%commands.showDebugPreview%"
+			},
+			{
+				"category": "%commands.category%",
+				"command": "livePreview.start.externalPreview.atFile",
+				"title": "%commands.showPreviewExternalBrowser%"
+			},
+			{
+				"category": "%commands.category%",
+				"command": "livePreview.start.externalDebugPreview.atFile",
+				"icon": "$(debug-alt)",
+				"title": "%commands.showDebugPreviewExternalBrowser%"
+			},
+			{
+				"category": "%commands.category%",
+				"command": "livePreview.start.internalPreview.atFile",
+				"title": "%commands.showPreviewInternalBrowser%"
+			},
+			{
+				"category": "%commands.category%",
+				"command": "livePreview.setDefaultOpenFile",
+				"title": "%commands.openAutomaticallyOnServerStart%"
+			},
+			{
+				"category": "%commands.category%",
+				"command": "livePreview.runServerLoggingTask",
+				"title": "%commands.runServerLoggingTask%"
+			},
+			{
+				"category": "%commands.category%",
+				"command": "livePreview.end",
+				"title": "%commands.stopServer%"
+			},
+			{
+				"category": "%commands.category%",
+				"command": "livePreview.start.preview.atFileString",
+				"title": "%commands.startServerAtFileString%"
+			}
+		],
+		"configuration": {
+			"properties": {
+				"livePreview.autoRefreshPreview": {
+					"default": "On All Changes in Editor",
+					"description": "%settings.autoRefreshPreview%",
+					"enum": [
+						"On All Changes in Editor",
+						"On Changes to Saved Files",
+						"Never"
+					]
+				},
+				"livePreview.customExternalBrowser": {
+					"default": "Default",
+					"description": "%settings.customExternalBrowser%",
+					"enum": [
+						"Edge",
+						"Chrome",
+						"Firefox",
+						"Default"
+					]
+				},
+				"livePreview.debugOnExternalPreview": {
+					"default": false,
+					"description": "%settings.debugOnExternalPreview%",
+					"type": "boolean"
+				},
+				"livePreview.defaultPreviewPath": {
+					"default": "",
+					"description": "%settings.defaultPreviewPath%",
+					"scope": "resource",
+					"type": "string"
+				},
+				"livePreview.hostIP": {
+					"default": "127.0.0.1",
+					"description": "%settings.hostIP%",
+					"type": "string"
+				},
+				"livePreview.httpHeaders": {
+					"default": {
+						"Accept-Ranges": "bytes"
+					},
+					"description": "%settings.httpHeaders%",
+					"type": "object"
+				},
+				"livePreview.notifyOnOpenLooseFile": {
+					"default": true,
+					"description": "%settings.notifyOnOpenLooseFile%",
+					"type": "boolean"
+				},
+				"livePreview.openPreviewTarget": {
+					"default": "Embedded Preview",
+					"description": "%settings.openPreviewTarget%",
+					"enum": [
+						"Embedded Preview",
+						"External Browser"
+					]
+				},
+				"livePreview.portNumber": {
+					"default": 3000,
+					"description": "%settings.portNumber%",
+					"maximum": 65535,
+					"minimum": 0,
+					"type": "number"
+				},
+				"livePreview.previewDebounceDelay": {
+					"default": 50,
+					"description": "%settings.previewDebounceDelay%",
+					"minimum": 0,
+					"type": "number"
+				},
+				"livePreview.serverKeepAliveAfterEmbeddedPreviewClose": {
+					"default": 3,
+					"description": "%settings.serverKeepAliveAfterEmbeddedPreviewClose%",
+					"maximum": 20,
+					"minimum": 0,
+					"type": "number"
+				},
+				"livePreview.serverRoot": {
+					"default": "",
+					"description": "%settings.serverRoot%",
+					"scope": "resource",
+					"type": "string"
+				},
+				"livePreview.showServerStatusNotifications": {
+					"default": false,
+					"description": "%settings.showServerStatusNotifications%",
+					"type": "boolean"
+				},
+				"livePreview.tasks.runTaskWithExternalPreview": {
+					"default": false,
+					"description": "%settings.tasks.runTaskWithExternalPreview%",
+					"type": "boolean"
+				}
+			},
+			"title": "Live Preview"
+		},
+		"menus": {
+			"commandPalette": [
+				{
+					"command": "livePreview.start",
+					"when": "!LivePreviewServerOn"
+				},
+				{
+					"command": "livePreview.start.preview.atFile",
+					"when": "false"
+				},
+				{
+					"command": "livePreview.start.preview.atFileString",
+					"when": "false"
+				},
+				{
+					"command": "livePreview.start.debugPreview.atFile",
+					"when": "false"
+				},
+				{
+					"command": "livePreview.start.internalPreview.atFile",
+					"group": "1_livepreview",
+					"when": "editorLangId == html && !notebookEditorFocused"
+				},
+				{
+					"command": "livePreview.start.externalPreview.atFile",
+					"group": "1_livepreview",
+					"when": "editorLangId == html && !notebookEditorFocused"
+				},
+				{
+					"command": "livePreview.start.externalPreview.atFile",
+					"group": "1_livepreview",
+					"when": "activeWebviewPanelId == 'browserPreview'"
+				},
+				{
+					"command": "livePreview.start.externalDebugPreview.atFile",
+					"group": "1_livepreview",
+					"when": "editorLangId == html && !notebookEditorFocused"
+				},
+				{
+					"command": "livePreview.start.externalDebugPreview.atFile",
+					"group": "1_livepreview",
+					"when": "activeWebviewPanelId == 'browserPreview'"
+				},
+				{
+					"command": "livePreview.end",
+					"group": "1_livepreview",
+					"when": "LivePreviewServerOn"
+				},
+				{
+					"command": "livePreview.setDefaultOpenFile",
+					"when": "false"
+				}
+			],
+			"editor/context": [
+				{
+					"command": "livePreview.start.preview.atFile",
+					"group": "1_livepreview@1",
+					"when": "resourceLangId == html"
+				},
+				{
+					"command": "livePreview.setDefaultOpenFile",
+					"group": "1_livepreview@2",
+					"when": "resourceLangId == html"
+				}
+			],
+			"editor/title": [
+				{
+					"command": "livePreview.start.preview.atFile",
+					"group": "navigation",
+					"when": "editorLangId == html && !notebookEditorFocused"
+				}
+			],
+			"explorer/context": [
+				{
+					"command": "livePreview.start.preview.atFile",
+					"group": "1_livepreview@1",
+					"when": "resourceLangId == html"
+				},
+				{
+					"command": "livePreview.setDefaultOpenFile",
+					"group": "1_livepreview@2",
+					"when": "resourceLangId == html"
+				}
+			]
+		},
+		"taskDefinitions": [
+			{
+				"properties": {
+					"workspacePath": {
+						"description": "%tasks.workspacePathDesc%",
+						"type": "string"
+					}
+				},
+				"type": "Live Preview"
+			}
+		]
+	},
+	"activationEvents": [
+		"onWebviewPanel:browserPreview",
+		"onTaskType:Live Preview"
+	],
+	"dependencies": {
+		"mime": "^4.0.3",
+		"url": "^0.11.3",
+		"ws": "^8.17.0"
+	},
+	"devDependencies": {
+		"@types/mime": "^3.0.4",
+		"@types/node": "^20.14.0",
+		"@types/sinon": "17.0.3",
+		"@types/ws": "^8.5.10",
+		"esbuild": "^0.21.4",
+		"sinon": "18.0.0",
+		"ts-loader": "^9.5.1"
+	},
+	"icon": "icon.png",
+	"preview": true,
+	"aiKey": "AIF-d9b70cd4-b9f9-4d70-929b-a071c400b217",
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"description": "Live Preview runs a server to host workspace files.",
+			"supported": false
+		},
+		"virtualWorkspaces": false
+	},
+	"l10n": "./l10n"
 }
