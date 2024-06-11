@@ -261,19 +261,19 @@
 		]
 	},
 	"dependencies": {
-		"mime": "^3.0.0",
-		"url": "^0.11.0",
-		"ws": "^8.8.1"
+		"mime": "^4.0.3",
+		"url": "^0.11.3",
+		"ws": "^8.17.0"
 	},
 	"description": "Hosts a local server in your workspace for you to preview your webpages on.",
 	"devDependencies": {
-		"@types/mime": "^3.0.1",
-		"@types/node": "^18.7.18",
-		"@types/sinon": "7.0.11",
-		"@types/ws": "^8.5.3",
-		"esbuild": "^0.15.7",
-		"sinon": "9.0.0",
-		"ts-loader": "^9.3.1"
+		"@types/mime": "^3.0.4",
+		"@types/node": "^20.14.2",
+		"@types/sinon": "17.0.3",
+		"@types/ws": "^8.5.10",
+		"esbuild": "^0.21.5",
+		"sinon": "18.0.0",
+		"ts-loader": "^9.5.1"
 	},
 	"displayName": "Live Preview",
 	"icon": "icon.png",
