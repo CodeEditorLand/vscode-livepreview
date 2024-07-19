@@ -1,6 +1,0 @@
-trailingComma: 'es5'
-useTabs: true
-semi: true
-endOfLine: auto
-printWidth: 80
-singleQuote: true
