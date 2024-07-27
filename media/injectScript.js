@@ -10,31 +10,31 @@
  * http://aka.ms/live-preview
  */
 
-window.addEventListener('message', (event) => handleMessage(event), false);
-window.addEventListener('error', (event) => handleError(event), false);
+window.addEventListener("message", (event) => handleMessage(event), false);
+window.addEventListener("error", (event) => handleError(event), false);
 
-document.addEventListener('DOMContentLoaded', function (e) {
+document.addEventListener("DOMContentLoaded", function (e) {
 	onLoad();
 });
 
 if (window.parent !== window) {
-	console.error = createConsoleOverride('ERROR');
+	console.error = createConsoleOverride("ERROR");
 
-	console.log = createConsoleOverride('LOG');
+	console.log = createConsoleOverride("LOG");
 
-	console.warn = createConsoleOverride('WARN');
+	console.warn = createConsoleOverride("WARN");
 
-	console.info = createConsoleOverride('INFO');
+	console.info = createConsoleOverride("INFO");
 
-	console.clear = createConsoleOverride('CLEAR');
+	console.clear = createConsoleOverride("CLEAR");
 }
 
 /**
  * @description run initialization on load.
  */
 function onLoad() {
-	const connection = new WebSocket('${WS_URL}');
-	connection.addEventListener('message', (e) => handleSocketMessage(e.data));
+	const connection = new WebSocket("${WS_URL}");
+	connection.addEventListener("message", (e) => handleSocketMessage(e.data));
 
 	let onlyCtrlDown = false;
 
@@ -45,32 +45,32 @@ function onLoad() {
 
 	// In embedded preview, tell the webview panel which page it is on now.
 	postParentMessage({
-		command: 'update-path',
+		command: "update-path",
 		text: JSON.stringify(commandPayload),
 	});
 
 	handleLinkHoverEnd();
 
-	const links = document.getElementsByTagName('a');
+	const links = document.getElementsByTagName("a");
 	for (const link of links) {
 		// In embedded preview, all link clicks must be checked to see if the target page can be injected with this file's script.
-		link.addEventListener('click', (e) => handleLinkClick(e.target.href));
-		link.addEventListener('mouseenter', (e) =>
-			handleLinkHoverStart(e.target.href)
+		link.addEventListener("click", (e) => handleLinkClick(e.target.href));
+		link.addEventListener("mouseenter", (e) =>
+			handleLinkHoverStart(e.target.href),
 		);
-		link.addEventListener('mouseleave', () => handleLinkHoverEnd());
+		link.addEventListener("mouseleave", () => handleLinkHoverEnd());
 	}
 
-	document.addEventListener('keydown', (e) => {
+	document.addEventListener("keydown", (e) => {
 		onlyCtrlDown = (e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey;
-		if ((e.key == 'F' || e.key == 'f') && onlyCtrlDown) {
+		if ((e.key == "F" || e.key == "f") && onlyCtrlDown) {
 			postParentMessage({
-				command: 'show-find',
+				command: "show-find",
 			});
 			return;
 		}
 		postParentMessage({
-			command: 'did-keydown',
+			command: "did-keydown",
 			key: {
 				key: e.key,
 				keyCode: e.keyCode,
@@ -84,10 +84,10 @@ function onLoad() {
 		});
 	});
 
-	document.addEventListener('keyup', (e) => {
+	document.addEventListener("keyup", (e) => {
 		onlyCtrlDown = (e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey;
 		postParentMessage({
-			command: 'did-keyup',
+			command: "did-keyup",
 			key: {
 				key: e.key,
 				keyCode: e.keyCode,
@@ -117,11 +117,12 @@ function createConsoleOverride(type) {
 		CLEAR: console.clear,
 	};
 	return function (msg) {
-		let stringifiedMsg = 'undefined';
+		let stringifiedMsg = "undefined";
 
 		try {
 			stringifiedMsg = JSON.stringify(msg);
-			if (!stringifiedMsg) throw new Error('message is not in JSON format');
+			if (!stringifiedMsg)
+				throw new Error("message is not in JSON format");
 		} catch (err) {
 			try {
 				stringifiedMsg = msg.toString();
@@ -135,7 +136,7 @@ function createConsoleOverride(type) {
 			data: stringifiedMsg,
 		};
 		postParentMessage({
-			command: 'console',
+			command: "console",
 			text: JSON.stringify(messagePayload),
 		});
 		consoleOverrides[type].apply(console, arguments);
@@ -149,7 +150,7 @@ function createConsoleOverride(type) {
 function handleSocketMessage(data) {
 	const parsedMessage = JSON.parse(data);
 	switch (parsedMessage.command) {
-		case 'reload': {
+		case "reload": {
 			reloadPage();
 		}
 	}
@@ -163,25 +164,25 @@ function handleMessage(event) {
 	const message = event.data;
 
 	switch (message.command) {
-		case 'refresh':
+		case "refresh":
 			reloadPage();
 			break;
-		case 'refresh-forced':
+		case "refresh-forced":
 			window.location.reload();
 			break;
-		case 'setup-parent-listener': {
+		case "setup-parent-listener": {
 			const commandPayload = {
 				path: window.location,
 				title: document.title,
 			};
 
 			postParentMessage({
-				command: 'update-path',
+				command: "update-path",
 				text: JSON.stringify(commandPayload),
 			});
 			break;
 		}
-		case 'find-next': {
+		case "find-next": {
 			let findResult = window.find(message.text);
 			if (!findResult) {
 				if (hasFindResults(message.text)) {
@@ -190,12 +191,12 @@ function handleMessage(event) {
 				}
 			}
 			postParentMessage({
-				command: 'show-find-icon',
+				command: "show-find-icon",
 				text: findResult,
 			});
 			break;
 		}
-		case 'find-prev': {
+		case "find-prev": {
 			let findResult = window.find(message.text, false, true);
 			if (!findResult) {
 				if (hasFindResults(message.text)) {
@@ -204,15 +205,15 @@ function handleMessage(event) {
 				}
 			}
 			postParentMessage({
-				command: 'show-find-icon',
+				command: "show-find-icon",
 				text: findResult,
 			});
 			break;
 		}
 		default: {
 			if (
-				event.data.command != 'perform-url-check' &&
-				event.data.command != 'update-path'
+				event.data.command != "perform-url-check" &&
+				event.data.command != "update-path"
 			) {
 				postParentMessage(event.data);
 			}
@@ -230,16 +231,16 @@ function handleError(event) {
 	//    "errorType: errorMessage"
 	// Example:
 	//    "SyntaxError: Illegal newline after throw"
-	const errorType = stackMessage.split(':')[0];
+	const errorType = stackMessage.split(":")[0];
 
 	// ignore errors such as SyntaxError, ReferenceError, etc
-	if (errorType === 'Error') {
+	if (errorType === "Error") {
 		const messagePayload = {
-			type: 'UNCAUGHT_ERROR',
+			type: "UNCAUGHT_ERROR",
 			data: stackMessage,
 		};
 		postParentMessage({
-			command: 'console',
+			command: "console",
 			text: JSON.stringify(messagePayload),
 		});
 	}
@@ -280,7 +281,7 @@ function findToEnd(searchString) {
  */
 function postParentMessage(data) {
 	if (window.parent !== window) {
-		window.parent.postMessage(data, '*');
+		window.parent.postMessage(data, "*");
 	}
 }
 
@@ -290,16 +291,26 @@ function postParentMessage(data) {
  * @param {string} linkTarget
  */
 function handleLinkClick(linkTarget) {
-	const host = '${HTTP_URL}';
-	if (linkTarget && linkTarget != '' && !linkTarget.startsWith('javascript:')) {
+	const host = "${HTTP_URL}";
+	if (
+		linkTarget &&
+		linkTarget != "" &&
+		!linkTarget.startsWith("javascript:")
+	) {
 		if (!linkTarget.startsWith(host)) {
 			// The embedded preview does not support external sites; let the extension know that an external link has been
 			// opened in the embedded preview; this will open the modal to ask the user to navigate in an external browser
 			// and will force the embedded preview back to the previous page.
-			postParentMessage({ command: 'open-external-link', text: linkTarget });
+			postParentMessage({
+				command: "open-external-link",
+				text: linkTarget,
+			});
 		} else {
 			// Check all local URLs to make sure to catch pages that won't be injectable
-			postParentMessage({ command: 'perform-url-check', text: linkTarget });
+			postParentMessage({
+				command: "perform-url-check",
+				text: linkTarget,
+			});
 		}
 	}
 }
@@ -311,7 +322,7 @@ function handleLinkClick(linkTarget) {
 function handleLinkHoverStart(linkTarget) {
 	// In embedded preview, trigger the link preview.
 	postParentMessage({
-		command: 'link-hover-start',
+		command: "link-hover-start",
 		text: linkTarget,
 	});
 }
@@ -321,7 +332,7 @@ function handleLinkHoverStart(linkTarget) {
  */
 function handleLinkHoverEnd() {
 	postParentMessage({
-		command: 'link-hover-end',
+		command: "link-hover-end",
 	});
 }
 
@@ -331,7 +342,7 @@ function handleLinkHoverEnd() {
  */
 function reloadPage() {
 	const block = document.body
-		? document.body.hasAttribute('data-server-no-reload')
+		? document.body.hasAttribute("data-server-no-reload")
 		: false;
 	if (block) return;
 	window.location.reload();
