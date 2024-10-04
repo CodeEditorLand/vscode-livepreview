@@ -38,7 +38,7 @@ export class TerminalStyleUtil {
 	public static ColorTerminalString(
 		input: string,
 		color: TerminalColor,
-		decoration = TerminalDeco.reset
+		decoration = TerminalDeco.reset,
 	): string {
 		return `\x1b[${decoration};${color}m${input}\x1b[0m`;
 	}

@@ -3,29 +3,31 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as vscode from 'vscode';
-import { URL } from 'url';
-import { Disposable } from '../utils/dispose';
-import TelemetryReporter from 'vscode-extension-telemetry';
-import { EndpointManager } from '../infoManagers/endpointManager';
-import { ConnectionManager } from '../connectionInfo/connectionManager';
-import { PathUtil } from '../utils/pathUtil';
-import { TASK_TERMINAL_BASE_NAME } from '../utils/constants';
-import { IOpenFileOptions } from '../manager';
-import { Connection } from '../connectionInfo/connection';
-import { escapeRegExp } from '../utils/utils';
+import { URL } from "url";
+import * as vscode from "vscode";
+import TelemetryReporter from "vscode-extension-telemetry";
+
+import { Connection } from "../connectionInfo/connection";
+import { ConnectionManager } from "../connectionInfo/connectionManager";
+import { EndpointManager } from "../infoManagers/endpointManager";
+import { IOpenFileOptions } from "../manager";
+import { TASK_TERMINAL_BASE_NAME } from "../utils/constants";
+import { Disposable } from "../utils/dispose";
+import { PathUtil } from "../utils/pathUtil";
+import { escapeRegExp } from "../utils/utils";
 
 /**
  * @description the link provider that runs on Live Preview's `Run Server` task
  */
 export class serverTaskLinkProvider
 	extends Disposable
-	implements vscode.TerminalLinkProvider {
+	implements vscode.TerminalLinkProvider
+{
 	// Triggers the editor to open a file, but to the side of the preview,
 	// which means that the manager must use the panel column info from the preview
 	// to open the file in a column where the preview is not.
 	private readonly _onRequestOpenEditorToSide = this._register(
-		new vscode.EventEmitter<vscode.Uri>()
+		new vscode.EventEmitter<vscode.Uri>(),
 	);
 	public readonly onRequestOpenEditorToSide =
 		this._onRequestOpenEditorToSide.event;
@@ -35,14 +37,14 @@ export class serverTaskLinkProvider
 			uri?: vscode.Uri;
 			options?: IOpenFileOptions;
 			previewType?: string;
-		}>()
+		}>(),
 	);
 	public readonly onShouldLaunchPreview = this._onShouldLaunchPreview.event;
 
 	constructor(
 		private readonly _reporter: TelemetryReporter,
 		private readonly _endpointManager: EndpointManager,
-		private readonly _connectionManager: ConnectionManager
+		private readonly _connectionManager: ConnectionManager,
 	) {
 		super();
 		vscode.window.registerTerminalLinkProvider(this);
@@ -50,7 +52,7 @@ export class serverTaskLinkProvider
 
 	public async provideTerminalLinks(
 		context: vscode.TerminalLinkContext,
-		token: vscode.CancellationToken
+		token: vscode.CancellationToken,
 	): Promise<vscode.TerminalLink[]> {
 		const links = new Array<vscode.TerminalLink>();
 		if (
@@ -62,8 +64,8 @@ export class serverTaskLinkProvider
 
 		await Promise.all(
 			this._connectionManager.connections.map((connection) =>
-				this._findFullLinkRegex(context.line, links, connection)
-			)
+				this._findFullLinkRegex(context.line, links, connection),
+			),
 		);
 
 		this._findPathnameRegex(context.line, links);
@@ -74,7 +76,7 @@ export class serverTaskLinkProvider
 		/* __GDPR__
 			"task.terminal.handleTerminalLink" : {}
 		*/
-		this._reporter.sendTelemetryEvent('task.terminal.handleTerminalLink');
+		this._reporter.sendTelemetryEvent("task.terminal.handleTerminalLink");
 
 		if (link.inEditor) {
 			await this._openRelativeLinkInWorkspace(link.data, link.isDir);
@@ -99,12 +101,12 @@ export class serverTaskLinkProvider
 	 */
 	private _findPathnameRegex(
 		input: string,
-		links: Array<vscode.TerminalLink>
+		links: Array<vscode.TerminalLink>,
 	): void {
 		// match relative links
 		const partialLinkRegex = new RegExp(
 			`(?<=\\s)\\/([^\\0<>\\?\\|\\s!\`&*()\\[\\]'":;]*)\\?*[\\w=]*`,
-			'g'
+			"g",
 		);
 		let partialLinkMatches: RegExpExecArray | null;
 		do {
@@ -112,15 +114,19 @@ export class serverTaskLinkProvider
 			if (partialLinkMatches) {
 				for (let i = 0; i < partialLinkMatches.length; i++) {
 					if (partialLinkMatches[i]) {
-						const queryIndex = partialLinkMatches[i].lastIndexOf('?');
+						const queryIndex =
+							partialLinkMatches[i].lastIndexOf("?");
 						const link =
 							queryIndex == -1
 								? partialLinkMatches[i]
-								: partialLinkMatches[i].substring(0, queryIndex);
-						const isDir = link.endsWith('/');
+								: partialLinkMatches[i].substring(
+										0,
+										queryIndex,
+									);
+						const isDir = link.endsWith("/");
 						const tooltip = isDir
-							? vscode.l10n.t('Reveal Folder ')
-							: vscode.l10n.t('Open File ');
+							? vscode.l10n.t("Reveal Folder ")
+							: vscode.l10n.t("Open File ");
 						const tl = {
 							startIndex: partialLinkMatches.index,
 							length: partialLinkMatches[i].length,
@@ -145,17 +151,17 @@ export class serverTaskLinkProvider
 	private async _findFullLinkRegex(
 		input: string,
 		links: Array<vscode.TerminalLink>,
-		connection: Connection
+		connection: Connection,
 	): Promise<void> {
 		const hostUri = connection.constructLocalUri(connection.httpPort);
 		const extHostUri = await connection.resolveExternalHTTPUri();
 		const extHostStr = escapeRegExp(
-			`${extHostUri.scheme}://${extHostUri.authority}`
+			`${extHostUri.scheme}://${extHostUri.authority}`,
 		);
 
 		const fullLinkRegex = new RegExp(
 			`(?:${extHostStr})[\\w\\-.~:/?#[\\]@!$&()*+,;=]*`,
-			'g'
+			"g",
 		);
 
 		let fullURLMatches: RegExpExecArray | null;
@@ -169,7 +175,7 @@ export class serverTaskLinkProvider
 						const tl = {
 							startIndex: fullURLMatches.index,
 							length: fullURLMatches[i].length,
-							tooltip: vscode.l10n.t('Open in Preview'),
+							tooltip: vscode.l10n.t("Open in Preview"),
 							data: vscode.Uri.joinPath(hostUri, url.pathname),
 							inEditor: false,
 						};
@@ -188,19 +194,28 @@ export class serverTaskLinkProvider
 	 * @param {string} file the path to open in the editor
 	 * @param {boolean} isDir whether it is a directory.
 	 */
-	private async _openRelativeLinkInWorkspace(file: string, isDir: boolean): Promise<void> {
+	private async _openRelativeLinkInWorkspace(
+		file: string,
+		isDir: boolean,
+	): Promise<void> {
 		file = unescape(file);
 		const workspace = await PathUtil.GetWorkspaceFromRelativePath(file);
 		const connection = this._connectionManager.getConnection(workspace);
-		const uri = connection ? connection.getAppendedURI(file) : vscode.Uri.file(await this._endpointManager.decodeLooseFileEndpoint(file) ?? '');
+		const uri = connection
+			? connection.getAppendedURI(file)
+			: vscode.Uri.file(
+					(await this._endpointManager.decodeLooseFileEndpoint(
+						file,
+					)) ?? "",
+				);
 
 		if (isDir) {
 			if (!PathUtil.GetWorkspaceFromAbsolutePath(uri.fsPath)) {
 				vscode.window.showErrorMessage(
-					'Cannot reveal folder. It is not in the open workspace.'
+					"Cannot reveal folder. It is not in the open workspace.",
 				);
 			} else {
-				vscode.commands.executeCommand('revealInExplorer', uri);
+				vscode.commands.executeCommand("revealInExplorer", uri);
 			}
 		} else {
 			this._onRequestOpenEditorToSide.fire(uri);

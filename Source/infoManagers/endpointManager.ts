@@ -3,9 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Disposable } from '../utils/dispose';
-import { PathUtil } from '../utils/pathUtil';
-import * as vscode from 'vscode';
+import * as vscode from "vscode";
+
+import { Disposable } from "../utils/dispose";
+import { PathUtil } from "../utils/pathUtil";
 
 /**
  * @description the object that manages the server endpoints for files outside of the default workspace
@@ -25,7 +26,9 @@ export class EndpointManager extends Disposable {
 		while (i < workspaceDocuments.length) {
 			if (
 				!workspaceDocuments[i].isUntitled &&
-				!PathUtil.GetWorkspaceFromAbsolutePath(workspaceDocuments[i].fileName)
+				!PathUtil.GetWorkspaceFromAbsolutePath(
+					workspaceDocuments[i].fileName,
+				)
 			) {
 				this.encodeLooseFileEndpoint(workspaceDocuments[i].fileName);
 			}
@@ -60,8 +63,12 @@ export class EndpointManager extends Disposable {
 	 * @param {string} urlPath the endpoint to check
 	 * @returns {string | undefined} the filesystem path that it loads or undefined if it doesn't decode to anything.
 	 */
-	public async decodeLooseFileEndpoint(urlPath: string): Promise<string | undefined> {
-		const path = this.changePrefixesForAbsPathDecode(PathUtil.UnescapePathParts(urlPath));
+	public async decodeLooseFileEndpoint(
+		urlPath: string,
+	): Promise<string | undefined> {
+		const path = this.changePrefixesForAbsPathDecode(
+			PathUtil.UnescapePathParts(urlPath),
+		);
 		const actualPath = this.validPath(path);
 		if (actualPath) {
 			const exists = (await PathUtil.FileExistsStat(actualPath)).exists;
@@ -78,7 +85,8 @@ export class EndpointManager extends Disposable {
 	 */
 	private validPath(file: string): string | undefined {
 		for (const item of this.validEndpointRoots.values()) {
-			for (const fileVariations of [file, `/${file}`]) { // if it's a unix path, it will be prepended by a `/`
+			for (const fileVariations of [file, `/${file}`]) {
+				// if it's a unix path, it will be prepended by a `/`
 				if (fileVariations.startsWith(item)) {
 					return fileVariations;
 				}
@@ -95,11 +103,11 @@ export class EndpointManager extends Disposable {
 	public changePrefixesForAbsPathDecode(urlPath: string): string {
 		let path = urlPath;
 
-		if (urlPath.startsWith('/') && urlPath.length > 1) {
+		if (urlPath.startsWith("/") && urlPath.length > 1) {
 			path = urlPath.substring(1);
 		}
 
-		if (urlPath.startsWith('unc/')) {
+		if (urlPath.startsWith("unc/")) {
 			path = `//${urlPath.substring(4)}`;
 		}
 

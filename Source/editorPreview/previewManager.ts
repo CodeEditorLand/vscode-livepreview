@@ -3,22 +3,27 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Disposable } from '../utils/dispose';
-import * as vscode from 'vscode';
-import { CustomExternalBrowser, Settings, SettingUtil } from '../utils/settingsUtil';
+import * as vscode from "vscode";
+import TelemetryReporter from "vscode-extension-telemetry";
+
+import { Connection } from "../connectionInfo/connection";
+import { ConnectionManager } from "../connectionInfo/connectionManager";
+import { EndpointManager } from "../infoManagers/endpointManager";
+import { IOpenFileOptions } from "../manager";
 import {
 	DONT_SHOW_AGAIN,
 	INIT_PANEL_TITLE,
 	OUTPUT_CHANNEL_NAME,
-} from '../utils/constants';
-import TelemetryReporter from 'vscode-extension-telemetry';
-import { ConnectionManager } from '../connectionInfo/connectionManager';
-import { PathUtil } from '../utils/pathUtil';
-import { BrowserPreview } from './browserPreview';
-import { Connection } from '../connectionInfo/connection';
-import { EndpointManager } from '../infoManagers/endpointManager';
-import { IOpenFileOptions } from '../manager';
-import { ExternalBrowserUtils } from '../utils/externalBrowserUtils';
+} from "../utils/constants";
+import { Disposable } from "../utils/dispose";
+import { ExternalBrowserUtils } from "../utils/externalBrowserUtils";
+import { PathUtil } from "../utils/pathUtil";
+import {
+	CustomExternalBrowser,
+	Settings,
+	SettingUtil,
+} from "../utils/settingsUtil";
+import { BrowserPreview } from "./browserPreview";
 
 /**
  * PreviewManager` is a singleton that handles the logic of opening the embedded preview.
@@ -35,7 +40,7 @@ export class PreviewManager extends Disposable {
 			uri?: vscode.Uri;
 			options?: IOpenFileOptions;
 			previewType?: string;
-		}>()
+		}>(),
 	);
 	public readonly onShouldLaunchPreview = this._onShouldLaunchPreview.event;
 
@@ -44,7 +49,7 @@ export class PreviewManager extends Disposable {
 		private readonly _reporter: TelemetryReporter,
 		private readonly _connectionManager: ConnectionManager,
 		private readonly _endpointManager: EndpointManager,
-		private readonly _serverExpired: () => void
+		private readonly _serverExpired: () => void,
 	) {
 		super();
 		this._outputChannel =
@@ -60,15 +65,15 @@ export class PreviewManager extends Disposable {
 	public async launchFileInEmbeddedPreview(
 		panel: vscode.WebviewPanel | undefined,
 		connection: Connection,
-		file?: vscode.Uri
+		file?: vscode.Uri,
 	): Promise<void> {
-		const path = file ? await this._fileUriToPath(file, connection) : '/';
+		const path = file ? await this._fileUriToPath(file, connection) : "/";
 		// If we already have a panel, show it.
 		if (this.currentPanel) {
 			await this.currentPanel.reveal(
 				vscode.ViewColumn.Beside,
 				path,
-				connection
+				connection,
 			);
 			return;
 		}
@@ -82,7 +87,7 @@ export class PreviewManager extends Disposable {
 				{
 					...this.getWebviewOptions(),
 					...this._getWebviewPanelOptions(),
-				}
+				},
 			);
 		}
 
@@ -98,18 +103,23 @@ export class PreviewManager extends Disposable {
 	public async launchFileInExternalBrowser(
 		debug: boolean,
 		connection: Connection,
-		file?: vscode.Uri
+		file?: vscode.Uri,
 	): Promise<void> {
 		const path = file
-			? PathUtil.ConvertToPosixPath(await this._fileUriToPath(file, connection))
-			: '/';
+			? PathUtil.ConvertToPosixPath(
+					await this._fileUriToPath(file, connection),
+				)
+			: "/";
 
 		const url = `http://${connection.host}:${connection.httpPort}${path}`;
 		if (debug) {
-			vscode.commands.executeCommand('extension.js-debug.debugLink', url);
+			vscode.commands.executeCommand("extension.js-debug.debugLink", url);
 		} else {
 			// will already resolve to local address
-			await ExternalBrowserUtils.openInBrowser(url, SettingUtil.GetConfig().customExternalBrowser);
+			await ExternalBrowserUtils.openInBrowser(
+				url,
+				SettingUtil.GetConfig().customExternalBrowser,
+			);
 		}
 	}
 
@@ -122,13 +132,13 @@ export class PreviewManager extends Disposable {
 			enableScripts: true,
 
 			localResourceRoots: [
-				vscode.Uri.joinPath(this._extensionUri, 'media'),
+				vscode.Uri.joinPath(this._extensionUri, "media"),
 				vscode.Uri.joinPath(
 					this._extensionUri,
-					'node_modules',
-					'@vscode',
-					'codicons',
-					'dist'
+					"node_modules",
+					"@vscode",
+					"codicons",
+					"dist",
 				),
 			],
 		};
@@ -142,19 +152,25 @@ export class PreviewManager extends Disposable {
 		/* __GDPR__
 			"preview.fileOutOfWorkspace" : {}
 		*/
-		this._reporter.sendTelemetryEvent('preview.fileOutOfWorkspace');
+		this._reporter.sendTelemetryEvent("preview.fileOutOfWorkspace");
 		if (
 			!this._notifiedAboutLooseFiles &&
 			SettingUtil.GetConfig().notifyOnOpenLooseFile
 		) {
 			vscode.window
 				.showWarningMessage(
-					vscode.l10n.t('Previewing a file that is not a child of the server root. To see fully correct relative file links, please open a workspace at the project root or consider changing your server root settings for Live Preview.'),
-					DONT_SHOW_AGAIN
+					vscode.l10n.t(
+						"Previewing a file that is not a child of the server root. To see fully correct relative file links, please open a workspace at the project root or consider changing your server root settings for Live Preview.",
+					),
+					DONT_SHOW_AGAIN,
 				)
 				.then(async (selection: vscode.MessageItem | undefined) => {
 					if (selection == DONT_SHOW_AGAIN) {
-						await SettingUtil.UpdateSettings(Settings.notifyOnOpenLooseFile, false, vscode.ConfigurationTarget.Global);
+						await SettingUtil.UpdateSettings(
+							Settings.notifyOnOpenLooseFile,
+							false,
+							vscode.ConfigurationTarget.Global,
+						);
 					}
 				});
 		}
@@ -167,17 +183,22 @@ export class PreviewManager extends Disposable {
 	 * @param {Connection} connection the connection to connect using
 	 * @returns {string} the transformed path if the original `file` was realtive.
 	 */
-	private async _fileUriToPath(file: vscode.Uri, connection: Connection): Promise<string> {
-		let path = '/';
+	private async _fileUriToPath(
+		file: vscode.Uri,
+		connection: Connection,
+	): Promise<string> {
+		let path = "/";
 		if (!connection?.workspace) {
 			this._notifyLooseFileOpen();
-			path = await this._endpointManager.encodeLooseFileEndpoint(file.fsPath);
+			path = await this._endpointManager.encodeLooseFileEndpoint(
+				file.fsPath,
+			);
 
-			if (!path.startsWith('/')) {
+			if (!path.startsWith("/")) {
 				path = `/${path}`;
 			}
 		} else if (connection) {
-			path = connection.getFileRelativeToWorkspace(file.fsPath) ?? '';
+			path = connection.getFileRelativeToWorkspace(file.fsPath) ?? "";
 		}
 		return path;
 	}
@@ -193,7 +214,7 @@ export class PreviewManager extends Disposable {
 	private _startEmbeddedPreview(
 		panel: vscode.WebviewPanel,
 		file: string,
-		connection: Connection
+		connection: Connection,
 	): void {
 		if (this._currentTimeout) {
 			clearTimeout(this._currentTimeout);
@@ -207,12 +228,12 @@ export class PreviewManager extends Disposable {
 				this._extensionUri,
 				this._reporter,
 				this._connectionManager,
-				this._outputChannel
-			)
+				this._outputChannel,
+			),
 		);
 
 		const listener = this.currentPanel.onShouldLaunchPreview((e) =>
-			this._onShouldLaunchPreview.fire(e)
+			this._onShouldLaunchPreview.fire(e),
 		);
 
 		this.previewActive = true;
@@ -221,16 +242,20 @@ export class PreviewManager extends Disposable {
 			this.currentPanel.onDispose(() => {
 				this.currentPanel = undefined;
 				const closeServerDelay =
-					SettingUtil.GetConfig().serverKeepAliveAfterEmbeddedPreviewClose;
+					SettingUtil.GetConfig()
+						.serverKeepAliveAfterEmbeddedPreviewClose;
 				if (closeServerDelay !== 0) {
-					this._currentTimeout = setTimeout(() => {
-						this._serverExpired();
+					this._currentTimeout = setTimeout(
+						() => {
+							this._serverExpired();
 
-						this.previewActive = false;
-					}, Math.floor(closeServerDelay * 1000 * 60));
+							this.previewActive = false;
+						},
+						Math.floor(closeServerDelay * 1000 * 60),
+					);
 				}
 				listener.dispose();
-			})
+			}),
 		);
 	}
 	/**

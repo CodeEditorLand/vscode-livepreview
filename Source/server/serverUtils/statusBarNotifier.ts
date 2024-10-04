@@ -3,8 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as vscode from 'vscode';
-import { Disposable } from '../../utils/dispose';
+import * as vscode from "vscode";
+
+import { Disposable } from "../../utils/dispose";
 
 /**
  * @description the status bar handler.
@@ -19,9 +20,12 @@ export class StatusBarNotifier extends Disposable {
 	constructor() {
 		super();
 		this._statusBar = this._register(
-			vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100)
+			vscode.window.createStatusBarItem(
+				vscode.StatusBarAlignment.Right,
+				100,
+			),
 		);
-		this._statusBar.name = vscode.l10n.t('Live Preview Ports');
+		this._statusBar.name = vscode.l10n.t("Live Preview Ports");
 		this.serverOff();
 		this._on = false;
 		this._ports = new Map<string, number>();
@@ -43,12 +47,15 @@ export class StatusBarNotifier extends Disposable {
 
 		if (this._ports.size === 1) {
 			const port = this._ports.values().next().value;
-			portsLabel = vscode.l10n.t('Port: {0}', port);
+			portsLabel = vscode.l10n.t("Port: {0}", port);
 		} else {
 			if (this._ports.size === 2) {
-				portsLabel = vscode.l10n.t('Ports: {0}', Array.from(this._ports.values()).join(', '));
+				portsLabel = vscode.l10n.t(
+					"Ports: {0}",
+					Array.from(this._ports.values()).join(", "),
+				);
 			} else {
-				portsLabel = vscode.l10n.t('{0} Ports', this._ports.size);
+				portsLabel = vscode.l10n.t("{0} Ports", this._ports.size);
 			}
 		}
 
@@ -57,14 +64,16 @@ export class StatusBarNotifier extends Disposable {
 		this._ports.forEach((port, uriString) => {
 			try {
 				const workspace = uriString
-					? vscode.workspace.getWorkspaceFolder(vscode.Uri.parse(uriString))
+					? vscode.workspace.getWorkspaceFolder(
+							vscode.Uri.parse(uriString),
+						)
 					: undefined;
 				bulletPoints.push(
 					`\n\t• ${port} (${
 						workspace
 							? workspace.name
-							: vscode.l10n.t('non-workspace files')
-					})`
+							: vscode.l10n.t("non-workspace files")
+					})`,
 				);
 			} catch {
 				// no op
@@ -73,17 +82,17 @@ export class StatusBarNotifier extends Disposable {
 
 		portsTooltip =
 			this._ports.size == 1
-				? vscode.l10n.t('Live Preview running on port:')
-				: vscode.l10n.t('Live Preview running on ports:') + ' ';
+				? vscode.l10n.t("Live Preview running on port:")
+				: vscode.l10n.t("Live Preview running on ports:") + " ";
 
-		portsTooltip += bulletPoints.join('');
+		portsTooltip += bulletPoints.join("");
 
 		this._statusBar.tooltip = portsTooltip;
 		this._statusBar.text = `$(radio-tower) ${portsLabel}`;
 		this._statusBar.command = {
-			title: vscode.l10n.t('Open Command Palette'),
-			command: 'workbench.action.quickOpen',
-			arguments: ['>Live Preview: '],
+			title: vscode.l10n.t("Open Command Palette"),
+			command: "workbench.action.quickOpen",
+			arguments: [">Live Preview: "],
 		};
 	}
 

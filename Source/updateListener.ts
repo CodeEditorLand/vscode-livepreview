@@ -3,11 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Disposable } from './utils/dispose';
-import * as vscode from 'vscode';
-import { UriSchemes } from './utils/constants';
-import { AutoRefreshPreview, SettingUtil } from './utils/settingsUtil';
-import { PathUtil } from './utils/pathUtil';
+import * as vscode from "vscode";
+
+import { UriSchemes } from "./utils/constants";
+import { Disposable } from "./utils/dispose";
+import { PathUtil } from "./utils/pathUtil";
+import { AutoRefreshPreview, SettingUtil } from "./utils/settingsUtil";
 
 /**
  * Listens for any file changes within:
@@ -20,19 +21,20 @@ export class UpdateListener extends Disposable {
 	private _debounceDelay: number;
 
 	private readonly _shouldRefreshPreviews = this._register(
-		new vscode.EventEmitter<void>()
+		new vscode.EventEmitter<void>(),
 	);
 
 	public readonly shouldRefreshPreviews = this._shouldRefreshPreviews.event;
 
 	constructor(_userDataDir: string | undefined) {
 		super();
-		this._watcher = vscode.workspace.createFileSystemWatcher('**');
+		this._watcher = vscode.workspace.createFileSystemWatcher("**");
 
 		const notUserDataDirChange = function (file: vscode.Uri): boolean {
 			return (
 				file.scheme != UriSchemes.vscode_userdata &&
-				(!_userDataDir || !PathUtil.PathBeginsWith(file.fsPath, _userDataDir))
+				(!_userDataDir ||
+					!PathUtil.PathBeginsWith(file.fsPath, _userDataDir))
 			);
 		};
 		this._debounceDelay = SettingUtil.GetConfig().previewDebounceDelay;
@@ -48,13 +50,13 @@ export class UpdateListener extends Disposable {
 				) {
 					this._refreshPreview();
 				}
-			})
+			}),
 		);
 
 		this._register(
 			vscode.workspace.onDidSaveTextDocument((e) => {
 				this._reloadIfOutOfWorkspace(e.uri);
-			})
+			}),
 		);
 
 		this._register(
@@ -62,7 +64,7 @@ export class UpdateListener extends Disposable {
 				for (const file of e.files) {
 					this._reloadIfOutOfWorkspace(file);
 				}
-			})
+			}),
 		);
 
 		this._register(
@@ -70,7 +72,7 @@ export class UpdateListener extends Disposable {
 				for (const file of e.files) {
 					this._reloadIfOutOfWorkspace(file);
 				}
-			})
+			}),
 		);
 
 		this._register(
@@ -78,7 +80,7 @@ export class UpdateListener extends Disposable {
 				if (this._reloadOnSave && notUserDataDirChange(e)) {
 					this._refreshPreview();
 				}
-			})
+			}),
 		);
 
 		this._register(
@@ -89,7 +91,7 @@ export class UpdateListener extends Disposable {
 				) {
 					this._refreshPreview();
 				}
-			})
+			}),
 		);
 
 		this._register(
@@ -100,14 +102,14 @@ export class UpdateListener extends Disposable {
 				) {
 					this._refreshPreview();
 				}
-			})
+			}),
 		);
 
 		this._register(
 			vscode.workspace.onDidChangeConfiguration((e) => {
 				this._debounceDelay =
 					SettingUtil.GetConfig().previewDebounceDelay;
-			})
+			}),
 		);
 	}
 
@@ -126,7 +128,8 @@ export class UpdateListener extends Disposable {
 	 */
 	private get _reloadOnSave(): boolean {
 		return (
-			SettingUtil.GetConfig().autoRefreshPreview == AutoRefreshPreview.onSave
+			SettingUtil.GetConfig().autoRefreshPreview ==
+			AutoRefreshPreview.onSave
 		);
 	}
 
@@ -142,6 +145,8 @@ export class UpdateListener extends Disposable {
 
 	private _refreshPreview(): void {
 		clearTimeout(this._debounceTimer);
-		this._debounceTimer = setTimeout(() => { this._shouldRefreshPreviews.fire(); }, this._debounceDelay);
+		this._debounceTimer = setTimeout(() => {
+			this._shouldRefreshPreviews.fire();
+		}, this._debounceDelay);
 	}
 }

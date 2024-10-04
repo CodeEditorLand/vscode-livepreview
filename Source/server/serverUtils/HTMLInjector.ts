@@ -3,15 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as fs from 'fs';
-import * as path from 'path';
-import * as vscode from 'vscode';
-import { Connection } from '../../connectionInfo/connection';
+import * as fs from "fs";
+import * as path from "path";
+import * as vscode from "vscode";
+
+import { Connection } from "../../connectionInfo/connection";
 import {
 	HTTP_URL_PLACEHOLDER,
 	WS_URL_PLACEHOLDER,
-} from '../../utils/constants';
-import { Disposable } from '../../utils/dispose';
+} from "../../utils/constants";
+import { Disposable } from "../../utils/dispose";
 
 /**
  * @description the string replacement information for the `replace()` function
@@ -31,23 +32,23 @@ export class HTMLInjector extends Disposable {
 
 	constructor(
 		_extensionUri: vscode.Uri,
-		private readonly _connection: Connection
+		private readonly _connection: Connection,
 	) {
 		super();
 		const scriptPath = path.join(
 			_extensionUri.fsPath,
-			'media',
-			'injectScript.js'
+			"media",
+			"injectScript.js",
 		);
 		// Reading the file synchronously since the rawScript string must exist for the
 		// object to function correctly.
-		this.rawScript = fs.readFileSync(scriptPath, 'utf8').toString();
+		this.rawScript = fs.readFileSync(scriptPath, "utf8").toString();
 		this._initScript(this.rawScript, undefined, undefined);
 
 		this._register(
 			this._connection.onConnected((e) => {
 				this._refresh(e.httpURI, e.wsURI);
-			})
+			}),
 		);
 	}
 
@@ -66,7 +67,7 @@ export class HTMLInjector extends Disposable {
 	private async _initScript(
 		fileString: string,
 		httpUri: vscode.Uri | undefined,
-		wsUri: vscode.Uri | undefined
+		wsUri: vscode.Uri | undefined,
 	): Promise<void> {
 		if (!httpUri) {
 			httpUri = await this._connection.resolveExternalHTTPUri();
@@ -76,11 +77,12 @@ export class HTMLInjector extends Disposable {
 		}
 
 		// if the HTTP scheme uses SSL, the WS scheme must also use SSL
-		const wsURL = `${httpUri.scheme === 'https' ? 'wss' : 'ws'}://${wsUri.authority
-			}${wsUri.path}`;
+		const wsURL = `${httpUri.scheme === "https" ? "wss" : "ws"}://${
+			wsUri.authority
+		}${wsUri.path}`;
 		let httpURL = `${httpUri.scheme}://${httpUri.authority}`;
 
-		if (httpURL.endsWith('/')) {
+		if (httpURL.endsWith("/")) {
 			httpURL = httpURL.substring(httpURL.length - 1);
 		}
 		const replacements = [
@@ -111,7 +113,7 @@ export class HTMLInjector extends Disposable {
 	 */
 	private async _refresh(
 		httpUri: vscode.Uri,
-		wsUri: vscode.Uri
+		wsUri: vscode.Uri,
 	): Promise<void> {
 		await this._initScript(this.rawScript, httpUri, wsUri);
 	}

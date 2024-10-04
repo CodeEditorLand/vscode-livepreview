@@ -3,28 +3,32 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as vscode from 'vscode';
-import * as http from 'http';
-import * as fs from 'fs';
-import * as path from 'path';
-import * as Stream from 'stream';
-import { Disposable } from '../utils/dispose';
-import { ContentLoader } from './serverUtils/contentLoader';
-import { INJECTED_ENDPOINT_NAME } from '../utils/constants';
-import TelemetryReporter from 'vscode-extension-telemetry';
-import { EndpointManager } from '../infoManagers/endpointManager';
-import { PathUtil } from '../utils/pathUtil';
-import { Connection } from '../connectionInfo/connection';
-import { IServerMsg } from './serverGrouping';
-import { SETTINGS_SECTION_ID, SettingUtil } from '../utils/settingsUtil';
+import * as fs from "fs";
+import * as http from "http";
+import * as path from "path";
+import * as Stream from "stream";
+import * as vscode from "vscode";
+import TelemetryReporter from "vscode-extension-telemetry";
+
+import { Connection } from "../connectionInfo/connection";
+import { EndpointManager } from "../infoManagers/endpointManager";
+import { INJECTED_ENDPOINT_NAME } from "../utils/constants";
+import { Disposable } from "../utils/dispose";
+import { PathUtil } from "../utils/pathUtil";
+import { SETTINGS_SECTION_ID, SettingUtil } from "../utils/settingsUtil";
+import { IServerMsg } from "./serverGrouping";
+import { ContentLoader } from "./serverUtils/contentLoader";
 
 export class HttpServer extends Disposable {
-	private _server?: http.Server<typeof http.IncomingMessage, typeof http.ServerResponse>;
+	private _server?: http.Server<
+		typeof http.IncomingMessage,
+		typeof http.ServerResponse
+	>;
 	private _contentLoader: ContentLoader;
 	private _defaultHeaders: any; // headers will be validated when set on the reponse
 
 	private readonly _onNewReqProcessed = this._register(
-		new vscode.EventEmitter<IServerMsg>()
+		new vscode.EventEmitter<IServerMsg>(),
 	);
 	public readonly onNewReqProcessed = this._onNewReqProcessed.event;
 
@@ -32,11 +36,16 @@ export class HttpServer extends Disposable {
 		_extensionUri: vscode.Uri,
 		private readonly _reporter: TelemetryReporter,
 		private readonly _endpointManager: EndpointManager,
-		private readonly _connection: Connection
+		private readonly _connection: Connection,
 	) {
 		super();
 		this._contentLoader = this._register(
-			new ContentLoader(_extensionUri, _reporter, _endpointManager, _connection)
+			new ContentLoader(
+				_extensionUri,
+				_reporter,
+				_endpointManager,
+				_connection,
+			),
 		);
 		this._defaultHeaders = SettingUtil.GetConfig().httpHeaders;
 
@@ -45,7 +54,7 @@ export class HttpServer extends Disposable {
 				if (e.affectsConfiguration(SETTINGS_SECTION_ID)) {
 					this._defaultHeaders = SettingUtil.GetConfig().httpHeaders;
 				}
-			})
+			}),
 		);
 	}
 
@@ -57,7 +66,7 @@ export class HttpServer extends Disposable {
 	 * @returns {string | undefined} the path where the server index is located.
 	 */
 	private get _basePath(): string {
-		return this._connection.rootPath ?? '';
+		return this._connection.rootPath ?? "";
 	}
 
 	/**
@@ -85,18 +94,26 @@ export class HttpServer extends Disposable {
 		this._server = this._createServer();
 
 		return new Promise((resolve, reject) => {
-			this._server?.on('listening', () => {
-				console.log(`Server is running on port ${this._connection.httpPort}`);
+			this._server?.on("listening", () => {
+				console.log(
+					`Server is running on port ${this._connection.httpPort}`,
+				);
 				resolve();
 			});
 
-			this._server?.on('error', (err: any) => {
-				if (err.code == 'EADDRINUSE') {
+			this._server?.on("error", (err: any) => {
+				if (err.code == "EADDRINUSE") {
 					this._connection.httpPort++;
-					this._server?.listen(this._connection.httpPort, this._connection.host);
-				} else if (err.code == 'EADDRNOTAVAIL') {
+					this._server?.listen(
+						this._connection.httpPort,
+						this._connection.host,
+					);
+				} else if (err.code == "EADDRNOTAVAIL") {
 					this._connection.resetHostToDefault();
-					this._server?.listen(this._connection.httpPort, this._connection.host);
+					this._server?.listen(
+						this._connection.httpPort,
+						this._connection.host,
+					);
 				} else {
 					/* __GDPR__
 						"server.err" : {
@@ -104,8 +121,8 @@ export class HttpServer extends Disposable {
 							"err": {"classification": "CallstackOrException", "purpose": "PerformanceAndHealth"}
 						}
 					*/
-					this._reporter.sendTelemetryErrorEvent('server.err', {
-						type: 'http',
+					this._reporter.sendTelemetryErrorEvent("server.err", {
+						type: "http",
 						err: err,
 					});
 					console.log(`Unknown error: ${err}`);
@@ -113,7 +130,10 @@ export class HttpServer extends Disposable {
 				}
 			});
 
-			this._server?.listen(this._connection.httpPort, this._connection.host);
+			this._server?.listen(
+				this._connection.httpPort,
+				this._connection.host,
+			);
 		});
 	}
 
@@ -126,28 +146,35 @@ export class HttpServer extends Disposable {
 	private async _serveStream(
 		basePath: string,
 		req: http.IncomingMessage,
-		res: http.ServerResponse
+		res: http.ServerResponse,
 	): Promise<void> {
-
-		const writeHeader = (code: number, contentType?: string | undefined, contentLength?: number | undefined): void => {
+		const writeHeader = (
+			code: number,
+			contentType?: string | undefined,
+			contentLength?: number | undefined,
+		): void => {
 			try {
 				res.writeHead(code, {
-					...(contentType ? { 'Content-Type': contentType } : {}),
-					...(contentLength ? { 'Content-Length': contentLength } : {}),
+					...(contentType ? { "Content-Type": contentType } : {}),
+					...(contentLength
+						? { "Content-Length": contentLength }
+						: {}),
 					// add CORP header for codespaces
 					// https://github.com/microsoft/vscode-livepreview/issues/560
-					...{'Cross-Origin-Resource-Policy': 'cross-origin'},
-					...this._defaultHeaders
+					...{ "Cross-Origin-Resource-Policy": "cross-origin" },
+					...this._defaultHeaders,
 				});
 			} catch (e) {
 				this._unsetDefaultHeaders(); // unset the headers so we don't keep trying to write them
-				vscode.window.showErrorMessage(vscode.l10n.t('Error writing HTTP headers. Please double-check your Live Preview settings.'));
+				vscode.window.showErrorMessage(
+					vscode.l10n.t(
+						"Error writing HTTP headers. Please double-check your Live Preview settings.",
+					),
+				);
 			}
 		};
 
-		const reportAndReturn = (
-			status: number
-		): void => {
+		const reportAndReturn = (status: number): void => {
 			// write the status to the header, send data for logging, then end.
 			writeHeader(status);
 			this._reportStatus(req, res);
@@ -166,7 +193,8 @@ export class HttpServer extends Disposable {
 				req.headers.host !== this._connection.host &&
 				req.headers.host !== expectedHost) ||
 			(req.headers.origin &&
-				req.headers.origin !== `${expectedUri.scheme}://${expectedHost}`)
+				req.headers.origin !==
+					`${expectedUri.scheme}://${expectedHost}`)
 		) {
 			reportAndReturn(401); // unauthorized
 			return;
@@ -176,7 +204,7 @@ export class HttpServer extends Disposable {
 		let contentLength: number | undefined;
 		if (req.url === INJECTED_ENDPOINT_NAME) {
 			const respInfo = this._contentLoader.loadInjectedJS();
-			const contentType = respInfo.ContentType ?? '';
+			const contentType = respInfo.ContentType ?? "";
 			contentLength = respInfo.ContentLength;
 			writeHeader(200, contentType, contentLength);
 			stream = respInfo.Stream;
@@ -185,7 +213,7 @@ export class HttpServer extends Disposable {
 		}
 		// can't use vscode.Uri.joinPath because that doesn't parse out the query
 		const urlObj = vscode.Uri.parse(
-			`${expectedUri.scheme}://${expectedUri.authority}${req.url}`
+			`${expectedUri.scheme}://${expectedUri.authority}${req.url}`,
 		);
 
 		let URLPathName = urlObj.path;
@@ -193,17 +221,16 @@ export class HttpServer extends Disposable {
 		// start processing URL
 
 		const writePageNotFound = (noServerRoot = false): void => {
-			const respInfo = noServerRoot ?
-				this._contentLoader.createNoRootServer() :
-				this._contentLoader.createPageDoesNotExist(absoluteReadPath);
+			const respInfo = noServerRoot
+				? this._contentLoader.createNoRootServer()
+				: this._contentLoader.createPageDoesNotExist(absoluteReadPath);
 			writeHeader(404, respInfo.ContentType, respInfo.ContentLength);
 			this._reportStatus(req, res);
 			stream = respInfo.Stream;
 			stream?.pipe(res);
 		};
 
-
-		if (basePath === '' && (URLPathName === '/' || URLPathName === '')) {
+		if (basePath === "" && (URLPathName === "/" || URLPathName === "")) {
 			writePageNotFound(true);
 			return;
 		}
@@ -212,19 +239,19 @@ export class HttpServer extends Disposable {
 		URLPathName = decodeURI(URLPathName);
 		let absoluteReadPath = path.join(basePath, URLPathName);
 
-		let contentType = 'application/octet-stream';
-		if (basePath === '') {
-			if (URLPathName.startsWith('/endpoint_unsaved')) {
+		let contentType = "application/octet-stream";
+		if (basePath === "") {
+			if (URLPathName.startsWith("/endpoint_unsaved")) {
 				const untitledFileName = URLPathName.substring(
-					URLPathName.lastIndexOf('/') + 1
+					URLPathName.lastIndexOf("/") + 1,
 				);
 				const content = await this._contentLoader.getFileStream(
 					untitledFileName,
-					false
+					false,
 				);
 				if (content.Stream) {
 					stream = content.Stream;
-					contentType = content.ContentType ?? '';
+					contentType = content.ContentType ?? "";
 					contentLength = content.ContentLength;
 					writeHeader(200, contentType, content.ContentLength);
 					stream.pipe(res);
@@ -233,7 +260,9 @@ export class HttpServer extends Disposable {
 			}
 
 			const decodedReadPath =
-				await this._endpointManager.decodeLooseFileEndpoint(URLPathName);
+				await this._endpointManager.decodeLooseFileEndpoint(
+					URLPathName,
+				);
 			looseFile = true;
 			if (
 				decodedReadPath &&
@@ -253,26 +282,40 @@ export class HttpServer extends Disposable {
 		}
 
 		// path should be valid now
-		const absPathExistsStatInfo = await PathUtil.FileExistsStat(absoluteReadPath);
+		const absPathExistsStatInfo =
+			await PathUtil.FileExistsStat(absoluteReadPath);
 		if (!absPathExistsStatInfo.exists) {
 			writePageNotFound();
 			return;
 		}
-		if (absPathExistsStatInfo.stat && absPathExistsStatInfo.stat.isDirectory()) {
-			if (!URLPathName.endsWith('/')) {
+		if (
+			absPathExistsStatInfo.stat &&
+			absPathExistsStatInfo.stat.isDirectory()
+		) {
+			if (!URLPathName.endsWith("/")) {
 				const queries = urlObj.query;
 				URLPathName = encodeURI(URLPathName);
-				res.setHeader('Location', `${URLPathName}/${queries.length > 0 ? `?${queries}` : ''}`);
+				res.setHeader(
+					"Location",
+					`${URLPathName}/${queries.length > 0 ? `?${queries}` : ""}`,
+				);
 				reportAndReturn(302); // redirect
 				return;
 			}
 
 			// Redirect to index.html if the request URL is a directory
-			if ((await PathUtil.FileExistsStat(path.join(absoluteReadPath, 'index.html'))).exists) {
-				absoluteReadPath = path.join(absoluteReadPath, 'index.html');
-				const respInfo = await this._contentLoader.getFileStream(absoluteReadPath);
+			if (
+				(
+					await PathUtil.FileExistsStat(
+						path.join(absoluteReadPath, "index.html"),
+					)
+				).exists
+			) {
+				absoluteReadPath = path.join(absoluteReadPath, "index.html");
+				const respInfo =
+					await this._contentLoader.getFileStream(absoluteReadPath);
 				stream = respInfo.Stream;
-				contentType = respInfo.ContentType ?? '';
+				contentType = respInfo.ContentType ?? "";
 				contentLength = respInfo.ContentLength;
 			} else {
 				// create a default index page
@@ -281,21 +324,22 @@ export class HttpServer extends Disposable {
 					URLPathName,
 					looseFile
 						? PathUtil.GetEndpointParent(URLPathName)
-						: undefined
+						: undefined,
 				);
 				stream = respInfo.Stream;
-				contentType = respInfo.ContentType ?? '';
+				contentType = respInfo.ContentType ?? "";
 				contentLength = respInfo.ContentLength;
 			}
 		} else {
-			const respInfo = await this._contentLoader.getFileStream(absoluteReadPath);
+			const respInfo =
+				await this._contentLoader.getFileStream(absoluteReadPath);
 			stream = respInfo.Stream;
-			contentType = respInfo.ContentType ?? '';
+			contentType = respInfo.ContentType ?? "";
 			contentLength = respInfo.ContentLength;
 		}
 
 		if (stream) {
-			stream.on('error', () => {
+			stream.on("error", () => {
 				reportAndReturn(500);
 				return;
 			});
@@ -315,7 +359,7 @@ export class HttpServer extends Disposable {
 	 */
 	private _createServer(): http.Server {
 		return http.createServer((req, res) =>
-			this._serveStream(this._basePath, req, res)
+			this._serveStream(this._basePath, req, res),
 		);
 	}
 
@@ -326,11 +370,11 @@ export class HttpServer extends Disposable {
 	 */
 	private _reportStatus(
 		req: http.IncomingMessage,
-		res: http.ServerResponse
+		res: http.ServerResponse,
 	): void {
 		this._onNewReqProcessed.fire({
-			method: req.method ?? '',
-			url: req.url ?? '',
+			method: req.method ?? "",
+			url: req.url ?? "",
 			status: res.statusCode,
 		});
 	}

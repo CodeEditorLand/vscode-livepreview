@@ -3,14 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Disposable } from '../utils/dispose';
-import * as vscode from 'vscode';
-import { ConnectionManager } from '../connectionInfo/connectionManager';
-import { INIT_PANEL_TITLE } from '../utils/constants';
-import { NavEditCommands, PageHistory } from './pageHistoryTracker';
-import { isFileInjectable } from '../utils/utils';
-import { Connection } from '../connectionInfo/connection';
-import { randomBytes } from 'crypto';
+import { randomBytes } from "crypto";
+import * as vscode from "vscode";
+
+import { Connection } from "../connectionInfo/connection";
+import { ConnectionManager } from "../connectionInfo/connectionManager";
+import { INIT_PANEL_TITLE } from "../utils/constants";
+import { Disposable } from "../utils/dispose";
+import { isFileInjectable } from "../utils/utils";
+import { NavEditCommands, PageHistory } from "./pageHistoryTracker";
 
 /**
  * @description the object responsible for communicating messages to the webview.
@@ -24,7 +25,7 @@ export class WebviewComm extends Disposable {
 			title: string;
 			pathname: string;
 			connection: Connection;
-		}>()
+		}>(),
 	);
 	public readonly onPanelTitleChange = this._onPanelTitleChange.event;
 
@@ -33,7 +34,7 @@ export class WebviewComm extends Disposable {
 		public currentConnection: Connection,
 		private readonly _panel: vscode.WebviewPanel,
 		private readonly _extensionUri: vscode.Uri,
-		private readonly _connectionManager: ConnectionManager
+		private readonly _connectionManager: ConnectionManager,
 	) {
 		super();
 
@@ -42,7 +43,7 @@ export class WebviewComm extends Disposable {
 				if (e.workspace === this.currentConnection?.workspace) {
 					this.reloadWebview();
 				}
-			})
+			}),
 		);
 
 		this._pageHistory = this._register(new PageHistory());
@@ -83,9 +84,9 @@ export class WebviewComm extends Disposable {
 	public async constructAddress(
 		URLExt: string,
 		connection: Connection = this.currentConnection,
-		hostURI?: vscode.Uri
+		hostURI?: vscode.Uri,
 	): Promise<string> {
-		if (URLExt.length > 0 && URLExt[0] == '/') {
+		if (URLExt.length > 0 && URLExt[0] == "/") {
 			URLExt = URLExt.substring(1);
 		}
 
@@ -107,9 +108,14 @@ export class WebviewComm extends Disposable {
 	public async goToFile(
 		URLExt: string,
 		updateHistory = true,
-		connection: Connection = this.currentConnection
+		connection: Connection = this.currentConnection,
 	): Promise<void> {
-		await this._setHtml(this._panel.webview, URLExt, updateHistory, connection);
+		await this._setHtml(
+			this._panel.webview,
+			URLExt,
+			updateHistory,
+			connection,
+		);
 		this.currentAddress = URLExt;
 	}
 
@@ -123,7 +129,7 @@ export class WebviewComm extends Disposable {
 		webview: vscode.Webview,
 		URLExt: string,
 		updateHistory: boolean,
-		connection: Connection
+		connection: Connection,
 	): Promise<void> {
 		this.currentConnection = connection;
 		const httpHost = await this.resolveHost(connection);
@@ -133,19 +139,19 @@ export class WebviewComm extends Disposable {
 			webview,
 			url,
 			`ws://${wsURI.authority}${wsURI.path}`,
-			`${httpHost.scheme}://${httpHost.authority}`
+			`${httpHost.scheme}://${httpHost.authority}`,
 		);
 
 		// If we can't rely on inline script to update panel title,
 		// then set panel title manually
 		if (!isFileInjectable(URLExt)) {
 			this._onPanelTitleChange.fire({
-				title: '',
+				title: "",
 				pathname: URLExt,
 				connection: connection,
 			});
 			this._panel.webview.postMessage({
-				command: 'set-url',
+				command: "set-url",
 				text: JSON.stringify({ fullPath: url, pathname: URLExt }),
 			});
 		}
@@ -167,13 +173,13 @@ export class WebviewComm extends Disposable {
 		webview: vscode.Webview,
 		httpURL: string,
 		wsServerAddr: string,
-		httpServerAddr: string
+		httpServerAddr: string,
 	): string {
 		// Local path to main script run in the webview
 		const scriptPathOnDisk = vscode.Uri.joinPath(
 			this._extensionUri,
-			'media',
-			'main.js'
+			"media",
+			"main.js",
 		);
 
 		// And the uri we use to load this script in the webview
@@ -182,13 +188,13 @@ export class WebviewComm extends Disposable {
 		// Local path to css styles
 		const stylesPathMainPath = vscode.Uri.joinPath(
 			this._extensionUri,
-			'media',
-			'vscode.css'
+			"media",
+			"vscode.css",
 		);
 		const codiconsPathMainPath = vscode.Uri.joinPath(
 			this._extensionUri,
-			'media',
-			'codicon.css'
+			"media",
+			"codicon.css",
 		);
 
 		// Uri to load styles into webview
@@ -196,18 +202,18 @@ export class WebviewComm extends Disposable {
 		const codiconsUri = webview.asWebviewUri(codiconsPathMainPath);
 
 		// Use a nonce to only allow specific scripts to be run
-		const nonce = randomBytes(16).toString('base64');
+		const nonce = randomBytes(16).toString("base64");
 
-		const back = vscode.l10n.t('Back');
-		const forward = vscode.l10n.t('Forward');
-		const reload = vscode.l10n.t('Reload');
-		const more = vscode.l10n.t('More Browser Actions');
-		const find_prev = vscode.l10n.t('Previous');
-		const find_next = vscode.l10n.t('Next');
-		const find_x = vscode.l10n.t('Close');
-		const browser_open = vscode.l10n.t('Open in Browser');
-		const find = vscode.l10n.t('Find in Page');
-		const devtools_open = vscode.l10n.t('Open Devtools Pane');
+		const back = vscode.l10n.t("Back");
+		const forward = vscode.l10n.t("Forward");
+		const reload = vscode.l10n.t("Reload");
+		const more = vscode.l10n.t("More Browser Actions");
+		const find_prev = vscode.l10n.t("Previous");
+		const find_next = vscode.l10n.t("Next");
+		const find_x = vscode.l10n.t("Close");
+		const browser_open = vscode.l10n.t("Open in Browser");
+		const find = vscode.l10n.t("Find in Page");
+		const devtools_open = vscode.l10n.t("Open Devtools Pane");
 
 		return `<!DOCTYPE html>
 		<html lang="en">
@@ -327,10 +333,10 @@ export class WebviewComm extends Disposable {
 	 */
 	public async setUrlBar(
 		pathname: string,
-		connection: Connection = this.currentConnection
+		connection: Connection = this.currentConnection,
 	): Promise<void> {
 		this._panel.webview.postMessage({
-			command: 'set-url',
+			command: "set-url",
 			text: JSON.stringify({
 				fullPath: await this.constructAddress(pathname, connection),
 				pathname: pathname,
@@ -347,21 +353,21 @@ export class WebviewComm extends Disposable {
 		let text = {};
 		switch (command) {
 			case NavEditCommands.DISABLE_BACK:
-				text = { element: 'back', disabled: true };
+				text = { element: "back", disabled: true };
 				break;
 			case NavEditCommands.ENABLE_BACK:
-				text = { element: 'back', disabled: false };
+				text = { element: "back", disabled: false };
 				break;
 			case NavEditCommands.DISABLE_FORWARD:
-				text = { element: 'forward', disabled: true };
+				text = { element: "forward", disabled: true };
 				break;
 			case NavEditCommands.ENABLE_FORWARD:
-				text = { element: 'forward', disabled: false };
+				text = { element: "forward", disabled: false };
 				break;
 		}
 
 		this._panel.webview.postMessage({
-			command: 'changed-history',
+			command: "changed-history",
 			text: JSON.stringify(text),
 		});
 	}
@@ -374,14 +380,18 @@ export class WebviewComm extends Disposable {
 	public handleNewPageLoad(
 		pathname: string,
 		connection: Connection,
-		panelTitle = ''
+		panelTitle = "",
 	): void {
 		// only load relative addresses
-		if (pathname.length > 0 && pathname[0] != '/') {
-			pathname = '/' + pathname;
+		if (pathname.length > 0 && pathname[0] != "/") {
+			pathname = "/" + pathname;
 		}
 
-		this._onPanelTitleChange.fire({ title: panelTitle, pathname, connection });
+		this._onPanelTitleChange.fire({
+			title: panelTitle,
+			pathname,
+			connection,
+		});
 		this.currentAddress = pathname;
 		const response = this._pageHistory?.addHistory(pathname, connection);
 		if (response) {

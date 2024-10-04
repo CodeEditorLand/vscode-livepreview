@@ -3,17 +3,18 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as vscode from 'vscode';
-import TelemetryReporter from 'vscode-extension-telemetry';
-import { Disposable } from '../utils/dispose';
+import * as vscode from "vscode";
+import TelemetryReporter from "vscode-extension-telemetry";
+
+import { IServerMsg } from "../server/serverGrouping";
+import { Disposable } from "../utils/dispose";
 import {
 	TerminalColor,
 	TerminalDeco,
 	TerminalStyleUtil,
-} from '../utils/terminalStyleUtil';
-import { FormatDateTime } from '../utils/utils';
-import { ServerStartedStatus } from './serverTaskProvider';
-import { IServerMsg } from '../server/serverGrouping';
+} from "../utils/terminalStyleUtil";
+import { FormatDateTime } from "../utils/utils";
+import { ServerStartedStatus } from "./serverTaskProvider";
 
 const CHAR_CODE_CTRL_C = 3;
 
@@ -22,19 +23,20 @@ const CHAR_CODE_CTRL_C = 3;
  */
 export class ServerTaskTerminal
 	extends Disposable
-	implements vscode.Pseudoterminal {
+	implements vscode.Pseudoterminal
+{
 	public running = false;
 
 	// This object will request to open and close the server, so its parent
 	// must listen for these requests and act accordingly.
 	private readonly _onRequestToOpenServerEmitter = this._register(
-		new vscode.EventEmitter<vscode.WorkspaceFolder | undefined>()
+		new vscode.EventEmitter<vscode.WorkspaceFolder | undefined>(),
 	);
 	public readonly onRequestToOpenServer =
 		this._onRequestToOpenServerEmitter.event;
 
 	private readonly _onRequestToCloseServerEmitter = this._register(
-		new vscode.EventEmitter<vscode.WorkspaceFolder | undefined>()
+		new vscode.EventEmitter<vscode.WorkspaceFolder | undefined>(),
 	);
 	public readonly onRequestToCloseServer =
 		this._onRequestToCloseServerEmitter.event;
@@ -49,14 +51,14 @@ export class ServerTaskTerminal
 	constructor(
 		private readonly _reporter: TelemetryReporter,
 		private _workspace: vscode.WorkspaceFolder | undefined,
-		private readonly _executeServer = true
+		private readonly _executeServer = true,
 	) {
 		super();
 		if (this._executeServer) {
 			/* __GDPR__
 				"tasks.terminal.start" : {}
 			*/
-			this._reporter.sendTelemetryEvent('tasks.terminal.start');
+			this._reporter.sendTelemetryEvent("tasks.terminal.start");
 		}
 	}
 
@@ -64,13 +66,14 @@ export class ServerTaskTerminal
 		// At this point we can start using the terminal.
 		if (this._executeServer) {
 			this.running = true;
-			this._onDidWrite.fire(
-				vscode.l10n.t('Opening Server...') + '\r\n'
-			);
+			this._onDidWrite.fire(vscode.l10n.t("Opening Server...") + "\r\n");
 			this._onRequestToOpenServerEmitter.fire(this._workspace);
 		} else {
 			this._onDidWrite.fire(
-				vscode.l10n.t('serverAlreadyRunning','Server already running in another task. Closing now.') + '\r\n'
+				vscode.l10n.t(
+					"serverAlreadyRunning",
+					"Server already running in another task. Closing now.",
+				) + "\r\n",
 			);
 			this.close();
 		}
@@ -89,7 +92,7 @@ export class ServerTaskTerminal
 	public handleInput(data: string): void {
 		if (data.length > 0 && data.charCodeAt(0) == CHAR_CODE_CTRL_C) {
 			this._onDidWrite.fire(
-				vscode.l10n.t('Closing the server...') + '\r\n'
+				vscode.l10n.t("Closing the server...") + "\r\n",
 			);
 
 			this._onRequestToCloseServerEmitter.fire(this._workspace);
@@ -103,38 +106,38 @@ export class ServerTaskTerminal
 	 */
 	public serverStarted(
 		externalUri: vscode.Uri,
-		status: ServerStartedStatus
+		status: ServerStartedStatus,
 	): void {
 		const formattedAddress = this._formatAddr(externalUri.toString());
 		switch (status) {
 			case ServerStartedStatus.JUST_STARTED: {
 				this._onDidWrite.fire(
 					vscode.l10n.t(
-						'Started Server on {0}',
-						formattedAddress + '\r\n'
-					)
+						"Started Server on {0}",
+						formattedAddress + "\r\n",
+					),
 				);
 				break;
 			}
 			case ServerStartedStatus.STARTED_BY_EMBEDDED_PREV: {
 				this._onDidWrite.fire(
 					vscode.l10n.t(
-						'Server already on at {0}',
-						formattedAddress + '\r\n> '
-					)
+						"Server already on at {0}",
+						formattedAddress + "\r\n> ",
+					),
 				);
 				break;
 			}
 		}
 		this._onDidWrite.fire(
 			vscode.l10n.t(
-				'Type {0} to close the server.',
+				"Type {0} to close the server.",
 				TerminalStyleUtil.ColorTerminalString(
 					`CTRL+C`,
 					TerminalColor.red,
-					TerminalDeco.bold
-				)
-			) + '\r\n\r\n> '
+					TerminalDeco.bold,
+				),
+			) + "\r\n\r\n> ",
 		);
 	}
 
@@ -142,9 +145,7 @@ export class ServerTaskTerminal
 	 * @description Called by the parent to tell the terminal that the server has stopped. May have been a result of the task ending or the result of a manual server shutdown.
 	 */
 	public serverStopped(): void {
-		this._onDidWrite.fire(
-			vscode.l10n.t('Server stopped. Bye!') + '\n'
-		);
+		this._onDidWrite.fire(vscode.l10n.t("Server stopped. Bye!") + "\n");
 		this.close();
 	}
 
@@ -153,13 +154,17 @@ export class ServerTaskTerminal
 	 */
 	public serverWillBeStopped(): void {
 		this._onDidWrite.fire(
-			vscode.l10n.t(`This task will finish now, but the server will stay on since you've used the embedded preview recently.`) + '\r\n'
+			vscode.l10n.t(
+				`This task will finish now, but the server will stay on since you've used the embedded preview recently.`,
+			) + "\r\n",
 		);
 		this._onDidWrite.fire(
 			TerminalStyleUtil.ColorTerminalString(
-				vscode.l10n.t("Run 'Live Preview: Stop Server' in the command palette to close the server and close any previews.") + '\r\n\r\n',
-				TerminalColor.yellow
-			)
+				vscode.l10n.t(
+					"Run 'Live Preview: Stop Server' in the command palette to close the server and close any previews.",
+				) + "\r\n\r\n",
+				TerminalColor.yellow,
+			),
 		);
 		this.close();
 	}
@@ -171,11 +176,12 @@ export class ServerTaskTerminal
 		const date = new Date();
 
 		this._onDidWrite.fire(
-			`[${FormatDateTime(date, ' ')}] ${msg.method
+			`[${FormatDateTime(date, " ")}] ${
+				msg.method
 			}: ${TerminalStyleUtil.ColorTerminalString(
 				decodeURI(msg.url),
-				TerminalColor.blue
-			)} | ${this._colorHttpStatus(msg.status)}\r\n> `
+				TerminalColor.blue,
+			)} | ${this._colorHttpStatus(msg.status)}\r\n> `,
 		);
 	}
 
@@ -198,12 +204,12 @@ export class ServerTaskTerminal
 	 * @returns {number} location of the second colon, used to find the colon before the port number.
 	 */
 	private _getSecondColonPos(str: string): number {
-		const indexColon = str.indexOf(':');
+		const indexColon = str.indexOf(":");
 		if (indexColon == -1) {
 			return str.length;
 		}
 
-		const indexSecondColon = str.indexOf(':', indexColon + 1);
+		const indexSecondColon = str.indexOf(":", indexColon + 1);
 		return indexSecondColon == -1 ? str.length : indexSecondColon;
 	}
 
@@ -219,12 +225,12 @@ export class ServerTaskTerminal
 			TerminalStyleUtil.ColorTerminalString(
 				firstHalfOfString,
 				TerminalColor.blue,
-				TerminalDeco.bold
+				TerminalDeco.bold,
 			) +
 			TerminalStyleUtil.ColorTerminalString(
 				lastHalfOfString,
 				TerminalColor.purple,
-				TerminalDeco.bold
+				TerminalDeco.bold,
 			)
 		);
 	}

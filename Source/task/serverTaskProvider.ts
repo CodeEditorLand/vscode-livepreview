@@ -3,17 +3,18 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as vscode from 'vscode';
-import TelemetryReporter from 'vscode-extension-telemetry';
-import { EndpointManager } from '../infoManagers/endpointManager';
-import { Disposable } from '../utils/dispose';
-import { serverTaskLinkProvider } from './serverTaskLinkProvider';
-import { ServerTaskTerminal } from './serverTaskTerminal';
-import { TASK_TERMINAL_BASE_NAME } from '../utils/constants';
-import { ConnectionManager } from '../connectionInfo/connectionManager';
-import { IServerMsg } from '../server/serverGrouping';
-import { SettingUtil } from '../utils/settingsUtil';
-import { IOpenFileOptions } from '../manager';
+import * as vscode from "vscode";
+import TelemetryReporter from "vscode-extension-telemetry";
+
+import { ConnectionManager } from "../connectionInfo/connectionManager";
+import { EndpointManager } from "../infoManagers/endpointManager";
+import { IOpenFileOptions } from "../manager";
+import { IServerMsg } from "../server/serverGrouping";
+import { TASK_TERMINAL_BASE_NAME } from "../utils/constants";
+import { Disposable } from "../utils/dispose";
+import { SettingUtil } from "../utils/settingsUtil";
+import { serverTaskLinkProvider } from "./serverTaskLinkProvider";
+import { ServerTaskTerminal } from "./serverTaskTerminal";
 
 interface IServerTaskDefinition extends vscode.TaskDefinition {
 	workspacePath?: string;
@@ -32,8 +33,9 @@ export enum ServerStartedStatus {
  */
 export class ServerTaskProvider
 	extends Disposable
-	implements vscode.TaskProvider {
-	public static CustomBuildScriptType = 'Live Preview';
+	implements vscode.TaskProvider
+{
+	public static CustomBuildScriptType = "Live Preview";
 	private _tasks: vscode.Task[] | undefined;
 	private _terminals: Map<string | undefined, ServerTaskTerminal>;
 	private _terminalLinkProvider: serverTaskLinkProvider;
@@ -41,21 +43,21 @@ export class ServerTaskProvider
 
 	// emitters to allow manager to communicate with the terminal.
 	private readonly _onRequestToOpenServerEmitter = this._register(
-		new vscode.EventEmitter<vscode.WorkspaceFolder | undefined>()
+		new vscode.EventEmitter<vscode.WorkspaceFolder | undefined>(),
 	);
 
 	public readonly onRequestToOpenServer =
 		this._onRequestToOpenServerEmitter.event;
 
 	private readonly _onRequestOpenEditorToSide = this._register(
-		new vscode.EventEmitter<vscode.Uri>()
+		new vscode.EventEmitter<vscode.Uri>(),
 	);
 
 	public readonly onRequestOpenEditorToSide =
 		this._onRequestOpenEditorToSide.event;
 
 	private readonly _onRequestToCloseServerEmitter = this._register(
-		new vscode.EventEmitter<vscode.WorkspaceFolder | undefined>()
+		new vscode.EventEmitter<vscode.WorkspaceFolder | undefined>(),
 	);
 
 	public readonly onRequestToCloseServer =
@@ -66,26 +68,30 @@ export class ServerTaskProvider
 			uri?: vscode.Uri;
 			options?: IOpenFileOptions;
 			previewType?: string;
-		}>()
+		}>(),
 	);
 	public readonly onShouldLaunchPreview = this._onShouldLaunchPreview.event;
 
 	constructor(
 		private readonly _reporter: TelemetryReporter,
 		endpointManager: EndpointManager,
-		connectionManager: ConnectionManager
+		connectionManager: ConnectionManager,
 	) {
 		super();
 
 		this._terminals = new Map<string, ServerTaskTerminal>();
 		this._terminalLinkProvider = this._register(
-			new serverTaskLinkProvider(_reporter, endpointManager, connectionManager)
+			new serverTaskLinkProvider(
+				_reporter,
+				endpointManager,
+				connectionManager,
+			),
 		);
 
 		this._register(
 			this._terminalLinkProvider.onShouldLaunchPreview((e) =>
-				this._onShouldLaunchPreview.fire(e)
-			)
+				this._onShouldLaunchPreview.fire(e),
+			),
 		);
 		this._terminalLinkProvider.onRequestOpenEditorToSide((e) => {
 			this._onRequestOpenEditorToSide.fire(e);
@@ -98,14 +104,15 @@ export class ServerTaskProvider
 			vscode.workspace.onDidChangeConfiguration((e) => {
 				this._runTaskWithExternalPreview =
 					SettingUtil.GetConfig().runTaskWithExternalPreview;
-			})
+			}),
 		);
 	}
 
 	public get isRunning(): boolean {
 		return (
-			Array.from(this._terminals.values()).find((term) => term.running) !==
-			undefined
+			Array.from(this._terminals.values()).find(
+				(term) => term.running,
+			) !== undefined
 		);
 	}
 
@@ -113,7 +120,9 @@ export class ServerTaskProvider
 	 * given a workspace, check if there is a task for that workspace that is running
 	 * @param workspace
 	 */
-	public isTaskRunning(workspace: vscode.WorkspaceFolder | undefined): boolean {
+	public isTaskRunning(
+		workspace: vscode.WorkspaceFolder | undefined,
+	): boolean {
 		const term = this._terminals.get(workspace?.uri.toString());
 		return term?.running ?? false;
 	}
@@ -123,7 +132,7 @@ export class ServerTaskProvider
 	 */
 	public sendServerInfoToTerminal(
 		msg: IServerMsg,
-		workspace: vscode.WorkspaceFolder | undefined
+		workspace: vscode.WorkspaceFolder | undefined,
 	): void {
 		const term = this._terminals.get(workspace?.uri.toString());
 		if (term && term.running) {
@@ -139,7 +148,7 @@ export class ServerTaskProvider
 	public serverStarted(
 		externalUri: vscode.Uri,
 		status: ServerStartedStatus,
-		workspace: vscode.WorkspaceFolder | undefined
+		workspace: vscode.WorkspaceFolder | undefined,
 	): void {
 		const term = this._terminals.get(workspace?.uri.toString());
 		if (term && term.running) {
@@ -154,7 +163,7 @@ export class ServerTaskProvider
 	 */
 	public serverStop(
 		now: boolean,
-		workspace: vscode.WorkspaceFolder | undefined
+		workspace: vscode.WorkspaceFolder | undefined,
 	): void {
 		const term = this._terminals.get(workspace?.uri.toString());
 		if (term && term.running) {
@@ -171,12 +180,12 @@ export class ServerTaskProvider
 	 * @param {vscode.WorkspaceFolder | undefined} workspace the workspace associated with this action.
 	 */
 	public async extRunTask(
-		workspace: vscode.WorkspaceFolder | undefined
+		workspace: vscode.WorkspaceFolder | undefined,
 	): Promise<void> {
 		/* __GDPR__
 			"tasks.terminal.startFromExtension" : {}
 		*/
-		this._reporter.sendTelemetryEvent('tasks.terminal.startFromExtension');
+		this._reporter.sendTelemetryEvent("tasks.terminal.startFromExtension");
 		const tasks = await vscode.tasks.fetchTasks({
 			type: ServerTaskProvider.CustomBuildScriptType,
 		});
@@ -227,8 +236,8 @@ export class ServerTaskProvider
 						{
 							type: ServerTaskProvider.CustomBuildScriptType,
 						},
-						workspace
-					)
+						workspace,
+					),
 				);
 			});
 		} else {
@@ -237,8 +246,8 @@ export class ServerTaskProvider
 					{
 						type: ServerTaskProvider.CustomBuildScriptType,
 					},
-					undefined
-				)
+					undefined,
+				),
 			);
 		}
 		return this._tasks;
@@ -252,7 +261,7 @@ export class ServerTaskProvider
 	 */
 	private _getTask(
 		definition: IServerTaskDefinition,
-		workspace: vscode.WorkspaceFolder | undefined
+		workspace: vscode.WorkspaceFolder | undefined,
 	): vscode.Task {
 		definition.workspacePath = workspace?.uri.fsPath;
 
@@ -266,7 +275,7 @@ export class ServerTaskProvider
 				workspace ?? vscode.TaskScope.Global,
 				taskName,
 				ServerTaskProvider.CustomBuildScriptType,
-				undefined
+				undefined,
 			);
 		}
 
@@ -278,7 +287,10 @@ export class ServerTaskProvider
 					return term;
 				}
 
-				const newTerm = new ServerTaskTerminal(this._reporter, workspace);
+				const newTerm = new ServerTaskTerminal(
+					this._reporter,
+					workspace,
+				);
 
 				newTerm.onRequestToOpenServer((e) => {
 					this._onRequestToOpenServerEmitter.fire(e);
@@ -292,14 +304,14 @@ export class ServerTaskProvider
 				this._terminals.set(workspace?.uri.toString(), newTerm);
 
 				return newTerm;
-			}
+			},
 		);
 		const task = new vscode.Task(
 			definition,
 			workspace ?? vscode.TaskScope.Global,
 			taskName,
 			ServerTaskProvider.CustomBuildScriptType,
-			custExec
+			custExec,
 		);
 		task.isBackground = true;
 
