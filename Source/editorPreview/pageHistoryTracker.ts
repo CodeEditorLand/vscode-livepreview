@@ -3,9 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Connection } from '../connectionInfo/connection';
-import { Disposable } from '../utils/dispose';
-import { PathUtil } from '../utils/pathUtil';
+import { Connection } from "../connectionInfo/connection";
+import { Disposable } from "../utils/dispose";
+import { PathUtil } from "../utils/pathUtil";
 
 export enum NavEditCommands {
 	DISABLE_BACK,
@@ -112,7 +112,7 @@ export class PageHistory extends Disposable {
 	 */
 	public addHistory(
 		address: string,
-		connection: Connection
+		connection: Connection,
 	): INavResponse | undefined {
 		address = PathUtil.ConvertToPosixPath(address);
 		address = PathUtil.EscapePathParts(address);

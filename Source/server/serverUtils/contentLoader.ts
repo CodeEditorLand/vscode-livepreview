@@ -3,23 +3,24 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as Stream from 'stream';
-import * as fs from 'fs';
-import * as vscode from 'vscode';
-import * as path from 'path';
-import * as mime from 'mime';
-import { Disposable } from '../../utils/dispose';
+import * as fs from "fs";
+import * as path from "path";
+import * as Stream from "stream";
+import * as mime from "mime";
+import * as vscode from "vscode";
+import TelemetryReporter from "vscode-extension-telemetry";
+
+import { Connection } from "../../connectionInfo/connection";
+import { EndpointManager } from "../../infoManagers/endpointManager";
+import { INJECTED_ENDPOINT_NAME } from "../../utils/constants";
+import { Disposable } from "../../utils/dispose";
+import { PathUtil } from "../../utils/pathUtil";
 import {
-	FormatFileSize,
 	FormatDateTime,
+	FormatFileSize,
 	isFileInjectable,
-} from '../../utils/utils';
-import { HTMLInjector } from './HTMLInjector';
-import TelemetryReporter from 'vscode-extension-telemetry';
-import { EndpointManager } from '../../infoManagers/endpointManager';
-import { PathUtil } from '../../utils/pathUtil';
-import { INJECTED_ENDPOINT_NAME } from '../../utils/constants';
-import { Connection } from '../../connectionInfo/connection';
+} from "../../utils/utils";
+import { HTMLInjector } from "./HTMLInjector";
 
 /**
  * @description the response information to give back to the server object
@@ -55,13 +56,13 @@ interface IIndexDirEntry {
 export class ContentLoader extends Disposable {
 	private _scriptInjector: HTMLInjector | undefined;
 	private _servedFiles: Set<string> = new Set<string>();
-	private _insertionTags = ['head', 'body', 'html', '!DOCTYPE'];
+	private _insertionTags = ["head", "body", "html", "!DOCTYPE"];
 
 	constructor(
 		_extensionUri: vscode.Uri,
 		private readonly _reporter: TelemetryReporter,
 		readonly _endpointManager: EndpointManager,
-		readonly _connection: Connection
+		readonly _connection: Connection,
 	) {
 		super();
 		this._scriptInjector = new HTMLInjector(_extensionUri, _connection);
@@ -92,11 +93,11 @@ export class ContentLoader extends Disposable {
 	 * @returns {IRespInfo} the injected script and its content type.
 	 */
 	public loadInjectedJS(): IRespInfo {
-		const fileString = Buffer.from(this._scriptInjector?.script ?? '');
+		const fileString = Buffer.from(this._scriptInjector?.script ?? "");
 
 		return {
 			Stream: Stream.Readable.from(fileString),
-			ContentType: 'text/javascript; charset=UTF-8',
+			ContentType: "text/javascript; charset=UTF-8",
 			ContentLength: fileString.length,
 		};
 	}
@@ -110,12 +111,12 @@ export class ContentLoader extends Disposable {
 		/* __GDPR__
 			"server.pageDoesNotExist" : {}
 		*/
-		this._reporter.sendTelemetryEvent('server.pageDoesNotExist');
-		const fileNotFound = vscode.l10n.t('File not found');
+		this._reporter.sendTelemetryEvent("server.pageDoesNotExist");
+		const fileNotFound = vscode.l10n.t("File not found");
 		const relativePathFormatted = `<b>"${relativePath}"</b>`;
 		const fileNotFoundMsg = vscode.l10n.t(
-			'The file {0} cannot be found. It may have been moved, edited, or deleted.',
-			relativePathFormatted
+			"The file {0} cannot be found. It may have been moved, edited, or deleted.",
+			relativePathFormatted,
 		);
 		const htmlString = Buffer.from(`
 		<!DOCTYPE html>
@@ -133,7 +134,7 @@ export class ContentLoader extends Disposable {
 
 		return {
 			Stream: Stream.Readable.from(htmlString),
-			ContentType: 'text/html; charset=UTF-8',
+			ContentType: "text/html; charset=UTF-8",
 			ContentLength: htmlString.length,
 		};
 	}
@@ -143,8 +144,10 @@ export class ContentLoader extends Disposable {
 	 * @returns {IRespInfo} the response info
 	 */
 	public createNoRootServer(): IRespInfo {
-		const noServerRoot = vscode.l10n.t('No Server Root');
-		const noWorkspaceOpen = vscode.l10n.t('This server is not based inside of a workspace, so the index does not direct to anything.');
+		const noServerRoot = vscode.l10n.t("No Server Root");
+		const noWorkspaceOpen = vscode.l10n.t(
+			"This server is not based inside of a workspace, so the index does not direct to anything.",
+		);
 		const customMsg = `<p>${noWorkspaceOpen}</p>`;
 		const htmlString = Buffer.from(`
 		<!DOCTYPE html>
@@ -162,7 +165,7 @@ export class ContentLoader extends Disposable {
 
 		return {
 			Stream: Stream.Readable.from(htmlString),
-			ContentType: 'text/html; charset=UTF-8',
+			ContentType: "text/html; charset=UTF-8",
 			ContentLength: htmlString.length,
 		};
 	}
@@ -177,27 +180,28 @@ export class ContentLoader extends Disposable {
 	public async createIndexPage(
 		readPath: string,
 		relativePath: string,
-		titlePath = relativePath
+		titlePath = relativePath,
 	): Promise<IRespInfo> {
 		/* __GDPR__
 			"server.indexPage" : {}
 		*/
-		this._reporter.sendTelemetryEvent('server.indexPage');
+		this._reporter.sendTelemetryEvent("server.indexPage");
 
 		const childFiles = await this.fsReadDir(readPath);
 
 		const fileEntries = new Array<IIndexFileEntry>();
 		const dirEntries = new Array<IIndexDirEntry>();
 
-		if (relativePath != '/') {
-			dirEntries.push({ LinkSrc: '..', LinkName: '..', DateTime: '' });
+		if (relativePath != "/") {
+			dirEntries.push({ LinkSrc: "..", LinkName: "..", DateTime: "" });
 		}
 
 		for (const childFile of childFiles) {
 			const relativeFileWithChild = path.join(relativePath, childFile);
 			const absolutePath = path.join(readPath, childFile);
 
-			const fileStats = (await PathUtil.FileExistsStat(absolutePath)).stat;
+			const fileStats = (await PathUtil.FileExistsStat(absolutePath))
+				.stat;
 			if (!fileStats) {
 				continue;
 			}
@@ -220,32 +224,32 @@ export class ContentLoader extends Disposable {
 			}
 		}
 
-		let directoryContents = '';
+		let directoryContents = "";
 
 		dirEntries.forEach(
 			(elem: IIndexDirEntry) =>
-			(directoryContents += `
+				(directoryContents += `
 				<tr>
 				<td><a href="${elem.LinkSrc}/">${elem.LinkName}/</a></td>
 				<td></td>
 				<td>${elem.DateTime}</td>
-				</tr>\n`)
+				</tr>\n`),
 		);
 
 		fileEntries.forEach(
 			(elem: IIndexFileEntry) =>
-			(directoryContents += `
+				(directoryContents += `
 				<tr>
 				<td><a href="${elem.LinkSrc}">${elem.LinkName}</a></td>
 				<td>${elem.FileSize}</td>
 				<td>${elem.DateTime}</td>
-				</tr>\n`)
+				</tr>\n`),
 		);
 
-		const indexOfTitlePath = vscode.l10n.t('Index of {0}', titlePath);
-		const name = vscode.l10n.t('Name');
-		const size = vscode.l10n.t('Size');
-		const dateModified = vscode.l10n.t('Date Modified');
+		const indexOfTitlePath = vscode.l10n.t("Index of {0}", titlePath);
+		const name = vscode.l10n.t("Name");
+		const size = vscode.l10n.t("Size");
+		const dateModified = vscode.l10n.t("Date Modified");
 		const htmlString = Buffer.from(`
 		<!DOCTYPE html>
 		<html>
@@ -272,7 +276,7 @@ export class ContentLoader extends Disposable {
 
 		return {
 			Stream: Stream.Readable.from(htmlString),
-			ContentType: 'text/html; charset=UTF-8',
+			ContentType: "text/html; charset=UTF-8",
 			ContentLength: htmlString.length,
 		};
 	}
@@ -283,13 +287,16 @@ export class ContentLoader extends Disposable {
 	 * @param {boolean} inFilesystem whether the path is in the filesystem (false for untitled files in editor)
 	 * @returns {IRespInfo} the response info
 	 */
-	public async getFileStream(readPath: string, inFilesystem = true): Promise<IRespInfo> {
+	public async getFileStream(
+		readPath: string,
+		inFilesystem = true,
+	): Promise<IRespInfo> {
 		this._servedFiles.add(readPath);
 		const workspaceDocuments = vscode.workspace.textDocuments;
 		let i = 0;
 		let stream: Stream.Readable | fs.ReadStream | undefined;
 
-		let contentType = mime.getType(readPath) ?? 'text/plain';
+		let contentType = mime.getType(readPath) ?? "text/plain";
 		let contentLength = 0;
 
 		while (i < workspaceDocuments.length) {
@@ -299,9 +306,9 @@ export class ContentLoader extends Disposable {
 				}
 				let fileContents = workspaceDocuments[i].getText();
 
-				if (workspaceDocuments[i].languageId == 'html') {
+				if (workspaceDocuments[i].languageId == "html") {
 					fileContents = this._injectIntoFile(fileContents);
-					contentType = 'text/html';
+					contentType = "text/html";
 				}
 
 				const fileContentsBuffer = Buffer.from(fileContents);
@@ -315,8 +322,11 @@ export class ContentLoader extends Disposable {
 		if (inFilesystem && i == workspaceDocuments.length) {
 			if (isFileInjectable(readPath)) {
 				const buffer = await PathUtil.FileRead(readPath);
-				const injectedFileContents = this._injectIntoFile(buffer.toString());
-				const injectedFileContentsBuffer = Buffer.from(injectedFileContents);
+				const injectedFileContents = this._injectIntoFile(
+					buffer.toString(),
+				);
+				const injectedFileContentsBuffer =
+					Buffer.from(injectedFileContents);
 				stream = Stream.Readable.from(injectedFileContentsBuffer);
 				contentLength = injectedFileContentsBuffer.length;
 			} else {
@@ -325,14 +335,14 @@ export class ContentLoader extends Disposable {
 			}
 		}
 
-		if (contentType.startsWith('text/')) {
+		if (contentType.startsWith("text/")) {
 			contentType = `${contentType}; charset=UTF-8`;
 		}
 
 		return {
 			Stream: stream,
 			ContentType: contentType,
-			ContentLength: contentLength
+			ContentLength: contentLength,
 		};
 	}
 
@@ -355,7 +365,7 @@ export class ContentLoader extends Disposable {
 		let re: RegExp;
 		let tagEnd = 0;
 		for (const tag of this._insertionTags) {
-			re = new RegExp(`<${tag}[^>]*>`, 'g');
+			re = new RegExp(`<${tag}[^>]*>`, "g");
 			re.test(contents);
 
 			tagEnd = re.lastIndex;
@@ -372,10 +382,10 @@ export class ContentLoader extends Disposable {
 	}
 
 	private fsReadDir(path: string): Promise<string[]> {
-		return (new Promise((resolve) => fs.readdir(path,
-			(err, files) => {
+		return new Promise((resolve) =>
+			fs.readdir(path, (err, files) => {
 				resolve(err ? [] : files);
-			})
-		));
+			}),
+		);
 	}
 }

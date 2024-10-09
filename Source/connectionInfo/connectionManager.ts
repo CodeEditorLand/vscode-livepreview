@@ -3,13 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { isIPv4 } from 'net';
-import * as vscode from 'vscode';
-import { DEFAULT_HOST } from '../utils/constants';
-import { Disposable } from '../utils/dispose';
-import { PathUtil } from '../utils/pathUtil';
-import { SETTINGS_SECTION_ID, SettingUtil } from '../utils/settingsUtil';
-import { Connection, ConnectionInfo } from './connection';
+import { isIPv4 } from "net";
+import * as vscode from "vscode";
+
+import { DEFAULT_HOST } from "../utils/constants";
+import { Disposable } from "../utils/dispose";
+import { PathUtil } from "../utils/pathUtil";
+import { SETTINGS_SECTION_ID, SettingUtil } from "../utils/settingsUtil";
+import { Connection, ConnectionInfo } from "./connection";
 
 /**
  * @description keeps track of all of the Connection objects and the info needed to create them (ie: initial ports).
@@ -21,7 +22,7 @@ export class ConnectionManager extends Disposable {
 	private _connections: Map<string | undefined, Connection>; // undefined key means no workspace root
 
 	private readonly _onConnected = this._register(
-		new vscode.EventEmitter<ConnectionInfo>()
+		new vscode.EventEmitter<ConnectionInfo>(),
 	);
 
 	/**
@@ -44,8 +45,8 @@ export class ConnectionManager extends Disposable {
 				vscode.l10n.t(
 					'Cannot use the host "{0}" when using a remote connection. Using default {1}.',
 					this._initHost,
-					DEFAULT_HOST
-				)
+					DEFAULT_HOST,
+				),
 			);
 			this._initHost = DEFAULT_HOST;
 		}
@@ -58,10 +59,9 @@ export class ConnectionManager extends Disposable {
 					this._pendingPort = SettingUtil.GetConfig().portNumber;
 					this._pendingHost = SettingUtil.GetConfig().hostIP;
 				}
-			})
+			}),
 		);
 	}
-
 
 	/**
 	 * get connection by workspaceFolder
@@ -69,7 +69,7 @@ export class ConnectionManager extends Disposable {
 	 * @returns connection
 	 */
 	public getConnection(
-		workspaceFolder: vscode.WorkspaceFolder | undefined
+		workspaceFolder: vscode.WorkspaceFolder | undefined,
 	): Connection | undefined {
 		return this._connections.get(workspaceFolder?.uri.toString());
 	}
@@ -91,7 +91,9 @@ export class ConnectionManager extends Disposable {
 	public async createAndAddNewConnection(
 		workspaceFolder: vscode.WorkspaceFolder | undefined,
 	): Promise<Connection> {
-		const serverRootPrefix = workspaceFolder ? await PathUtil.GetValidServerRootForWorkspace(workspaceFolder) : '';
+		const serverRootPrefix = workspaceFolder
+			? await PathUtil.GetValidServerRootForWorkspace(workspaceFolder)
+			: "";
 
 		const connection = this._register(
 			new Connection(
@@ -99,13 +101,15 @@ export class ConnectionManager extends Disposable {
 				serverRootPrefix,
 				this._initHttpPort,
 				this._initWSPort,
-				this._initHost
-			)
+				this._initHost,
+			),
 		);
 
-		this._register(connection.onConnected((e) => this._onConnected.fire(e)));
 		this._register(
-			connection.onShouldResetInitHost((host) => (this._initHost = host))
+			connection.onConnected((e) => this._onConnected.fire(e)),
+		);
+		this._register(
+			connection.onShouldResetInitHost((host) => (this._initHost = host)),
 		);
 		this._connections.set(workspaceFolder?.uri.toString(), connection);
 		return connection;
@@ -116,7 +120,7 @@ export class ConnectionManager extends Disposable {
 	 * @param workspaceFolder
 	 */
 	public removeConnection(
-		workspaceFolder: vscode.WorkspaceFolder | undefined
+		workspaceFolder: vscode.WorkspaceFolder | undefined,
 	): void {
 		this._connections.get(workspaceFolder?.uri.toString())?.dispose;
 		this._connections.delete(workspaceFolder?.uri.toString());
@@ -155,8 +159,8 @@ export class ConnectionManager extends Disposable {
 			vscode.l10n.t(
 				'The local IP address "{0}" is not formatted correctly. Using default {1}.',
 				host,
-				DEFAULT_HOST
-			)
+				DEFAULT_HOST,
+			),
 		);
 	}
 }

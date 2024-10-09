@@ -10,14 +10,14 @@
  * @returns a string that expresses the shortened date and time.
  */
 
-export function FormatDateTime(date: Date, delimeter = ', '): string {
+export function FormatDateTime(date: Date, delimeter = ", "): string {
 	const mm = date.getMonth() + 1;
-	const dd = date.getDate().toString().padStart(2, '0');
+	const dd = date.getDate().toString().padStart(2, "0");
 	const yy = date.getFullYear().toString().substring(2);
 
 	const hh = date.getHours();
-	const mi = date.getMinutes().toString().padStart(2, '0');
-	const ss = date.getSeconds().toString().padStart(2, '0');
+	const mi = date.getMinutes().toString().padStart(2, "0");
+	const ss = date.getSeconds().toString().padStart(2, "0");
 
 	return `${mm}/${dd}/${yy}${delimeter}${hh}:${mi}:${ss}`;
 }
@@ -28,7 +28,7 @@ export function FormatDateTime(date: Date, delimeter = ', '): string {
  * @returns the shortened file size with its units.
  */
 export function FormatFileSize(bytes: number): string {
-	const sizeUnits = ['B', 'kB', 'MB', 'GB'];
+	const sizeUnits = ["B", "kB", "MB", "GB"];
 
 	let i = 0;
 	while (i < sizeUnits.length) {
@@ -62,11 +62,13 @@ export function isFileInjectable(file: string | undefined): boolean {
  * @returns whether it is injectable.
  */
 function hasInjectableFileEnding(file: string): boolean {
-	const supportedEndings = ['.html', '.htm', '.xhtml'];
-	return supportedEndings.find((ending) => file.endsWith(ending)) !== undefined;
+	const supportedEndings = [".html", ".htm", ".xhtml"];
+	return (
+		supportedEndings.find((ending) => file.endsWith(ending)) !== undefined
+	);
 }
 
 export function escapeRegExp(str: string): string {
 	// from https://stackoverflow.com/questions/3446170/escape-string-for-use-in-javascript-regex
-	return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+	return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // $& means the whole matched string
 }

@@ -3,8 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as vscode from 'vscode';
-import { DEFAULT_HTTP_HEADERS } from './constants';
+import * as vscode from "vscode";
+
+import { DEFAULT_HTTP_HEADERS } from "./constants";
 
 /**
  * @description the object representation of the extension settings.
@@ -30,60 +31,60 @@ export interface ILivePreviewConfigItem {
  * @description Options for the preview refresh settings dropdown.
  */
 export enum AutoRefreshPreview {
-	onAnyChange = 'On All Changes in Editor',
-	onSave = 'On Changes to Saved Files',
-	never = 'Never',
+	onAnyChange = "On All Changes in Editor",
+	onSave = "On Changes to Saved Files",
+	never = "Never",
 }
 
 /**
  * @description Options for the preview target settings dropdown.
  */
 export enum OpenPreviewTarget {
-	embeddedPreview = 'Embedded Preview',
-	externalBrowser = 'External Browser',
+	embeddedPreview = "Embedded Preview",
+	externalBrowser = "External Browser",
 }
 
 export enum CustomExternalBrowser {
-	edge = 'Edge',
-	chrome = 'Chrome',
-	firefox = 'Firefox',
-	default = 'Default'
+	edge = "Edge",
+	chrome = "Chrome",
+	firefox = "Firefox",
+	default = "Default",
 }
 
 /**
  * @description prefix for all extension contributions for Live Preview
  */
-export const SETTINGS_SECTION_ID = 'livePreview';
+export const SETTINGS_SECTION_ID = "livePreview";
 
 /**
  * @description contains the string constants for all settings (`SETTINGS_SECTION_ID`.`).
  */
 export const Settings: any = {
-	portNumber: 'portNumber',
-	showStatusBarItem: 'showStatusBarItem',
-	showServerStatusNotifications: 'showServerStatusNotifications',
-	autoRefreshPreview: 'autoRefreshPreview',
-	openPreviewTarget: 'openPreviewTarget',
+	portNumber: "portNumber",
+	showStatusBarItem: "showStatusBarItem",
+	showServerStatusNotifications: "showServerStatusNotifications",
+	autoRefreshPreview: "autoRefreshPreview",
+	openPreviewTarget: "openPreviewTarget",
 	serverKeepAliveAfterEmbeddedPreviewClose:
-		'serverKeepAliveAfterEmbeddedPreviewClose',
-	notifyOnOpenLooseFile: 'notifyOnOpenLooseFile',
-	runTaskWithExternalPreview: 'tasks.runTaskWithExternalPreview',
-	defaultPreviewPath: 'defaultPreviewPath',
-	debugOnExternalPreview: 'debugOnExternalPreview',
-	hostIP: 'hostIP',
-	customExternalBrowser: 'customExternalBrowser',
-	serverRoot: 'serverRoot',
-	previewDebounceDelay: 'previewDebounceDelay',
-	httpHeaders: 'httpHeaders'
+		"serverKeepAliveAfterEmbeddedPreviewClose",
+	notifyOnOpenLooseFile: "notifyOnOpenLooseFile",
+	runTaskWithExternalPreview: "tasks.runTaskWithExternalPreview",
+	defaultPreviewPath: "defaultPreviewPath",
+	debugOnExternalPreview: "debugOnExternalPreview",
+	hostIP: "hostIP",
+	customExternalBrowser: "customExternalBrowser",
+	serverRoot: "serverRoot",
+	previewDebounceDelay: "previewDebounceDelay",
+	httpHeaders: "httpHeaders",
 };
 
 /**
  * @description the potential previewType for commands (formatted as `${SETTINGS_SECTION_ID}.start.${previewType}.${target}`).
  */
 export const PreviewType = {
-	internalPreview: 'internalPreview',
-	externalPreview: 'externalPreview',
-	externalDebugPreview: 'externalDebugPreview',
+	internalPreview: "internalPreview",
+	externalPreview: "externalPreview",
+	externalDebugPreview: "externalDebugPreview",
 };
 
 export class SettingUtil {
@@ -91,47 +92,61 @@ export class SettingUtil {
 	 * @description Get the current settings JSON.
 	 * @returns {ILivePreviewConfigItem} a JSON object with all of the settings for Live Preview.
 	 */
-	public static GetConfig(scope?: vscode.ConfigurationScope): ILivePreviewConfigItem {
-		const config = vscode.workspace.getConfiguration(SETTINGS_SECTION_ID, scope);
+	public static GetConfig(
+		scope?: vscode.ConfigurationScope,
+	): ILivePreviewConfigItem {
+		const config = vscode.workspace.getConfiguration(
+			SETTINGS_SECTION_ID,
+			scope,
+		);
 		return {
 			portNumber: config.get<number>(Settings.portNumber, 3000),
 			showServerStatusNotifications: config.get<boolean>(
 				Settings.showServerStatusNotifications,
-				false
+				false,
 			),
 			autoRefreshPreview: config.get<AutoRefreshPreview>(
 				Settings.autoRefreshPreview,
-				AutoRefreshPreview.onAnyChange
+				AutoRefreshPreview.onAnyChange,
 			),
 			openPreviewTarget: config.get<OpenPreviewTarget>(
 				Settings.openPreviewTarget,
-				OpenPreviewTarget.embeddedPreview
+				OpenPreviewTarget.embeddedPreview,
 			),
 			serverKeepAliveAfterEmbeddedPreviewClose: config.get<number>(
 				Settings.serverKeepAliveAfterEmbeddedPreviewClose,
-				20
+				20,
 			),
 			previewDebounceDelay: config.get<number>(
 				Settings.previewDebounceDelay,
-				50
+				50,
 			),
 			notifyOnOpenLooseFile: config.get<boolean>(
 				Settings.notifyOnOpenLooseFile,
-				true
+				true,
 			),
 			runTaskWithExternalPreview: config.get<boolean>(
 				Settings.runTaskWithExternalPreview,
-				false
+				false,
 			),
-			defaultPreviewPath: config.get<string>(Settings.defaultPreviewPath, ''),
+			defaultPreviewPath: config.get<string>(
+				Settings.defaultPreviewPath,
+				"",
+			),
 			debugOnExternalPreview: config.get<boolean>(
 				Settings.debugOnExternalPreview,
-				false
+				false,
 			),
-			hostIP: config.get<string>(Settings.hostIP, '127.0.0.1'),
-			customExternalBrowser: config.get<CustomExternalBrowser>(Settings.customExternalBrowser, CustomExternalBrowser.default),
-			serverRoot: config.get<string>(Settings.serverRoot, ''),
-			httpHeaders: config.get<any>(Settings.httpHeaders, DEFAULT_HTTP_HEADERS),
+			hostIP: config.get<string>(Settings.hostIP, "127.0.0.1"),
+			customExternalBrowser: config.get<CustomExternalBrowser>(
+				Settings.customExternalBrowser,
+				CustomExternalBrowser.default,
+			),
+			serverRoot: config.get<string>(Settings.serverRoot, ""),
+			httpHeaders: config.get<any>(
+				Settings.httpHeaders,
+				DEFAULT_HTTP_HEADERS,
+			),
 		};
 	}
 
@@ -168,7 +183,7 @@ export class SettingUtil {
 		settingSuffix: string,
 		value: T,
 		scope: vscode.ConfigurationTarget | boolean | null,
-		uri?: vscode.Uri
+		uri?: vscode.Uri,
 	): Promise<void> {
 		await vscode.workspace
 			.getConfiguration(SETTINGS_SECTION_ID, uri)

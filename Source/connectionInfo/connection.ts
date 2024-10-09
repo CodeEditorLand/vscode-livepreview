@@ -3,11 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as vscode from 'vscode';
-import { Disposable } from '../utils/dispose';
-import { DEFAULT_HOST } from '../utils/constants';
-import { PathUtil } from '../utils/pathUtil';
-import { SETTINGS_SECTION_ID } from '../utils/settingsUtil';
+import * as vscode from "vscode";
+
+import { DEFAULT_HOST } from "../utils/constants";
+import { Disposable } from "../utils/dispose";
+import { PathUtil } from "../utils/pathUtil";
+import { SETTINGS_SECTION_ID } from "../utils/settingsUtil";
 
 /**
  * @description the information that gets fired to emitter listeners on connection
@@ -29,15 +30,15 @@ export interface ConnectionInfo {
 export class Connection extends Disposable {
 	public httpServerBase: string | undefined;
 	public wsServerBase: string | undefined;
-	public wsPath = '';
+	public wsPath = "";
 
 	private readonly _onConnected = this._register(
-		new vscode.EventEmitter<ConnectionInfo>()
+		new vscode.EventEmitter<ConnectionInfo>(),
 	);
 	public readonly onConnected = this._onConnected.event;
 
 	private readonly _onShouldResetInitHost = this._register(
-		new vscode.EventEmitter<string>()
+		new vscode.EventEmitter<string>(),
 	);
 	public readonly onShouldResetInitHost = this._onShouldResetInitHost.event;
 
@@ -46,18 +47,21 @@ export class Connection extends Disposable {
 		private _rootPrefix: string,
 		public httpPort: number,
 		public wsPort: number,
-		public host: string
+		public host: string,
 	) {
 		super();
 
 		this._register(
 			vscode.workspace.onDidChangeConfiguration(async (e) => {
 				if (e.affectsConfiguration(SETTINGS_SECTION_ID)) {
-					this._rootPrefix = _workspace ? await PathUtil.GetValidServerRootForWorkspace(_workspace) : '';
+					this._rootPrefix = _workspace
+						? await PathUtil.GetValidServerRootForWorkspace(
+								_workspace,
+							)
+						: "";
 				}
-			})
+			}),
 		);
-
 	}
 
 	/**
@@ -67,14 +71,19 @@ export class Connection extends Disposable {
 	 * @param wsPath WS server path
 	 */
 	public async connected(): Promise<void> {
-		const externalHTTPUri = await this.resolveExternalHTTPUri(this.httpPort);
-		const externalWSUri = await this.resolveExternalWSUri(this.wsPort, this.wsPath);
+		const externalHTTPUri = await this.resolveExternalHTTPUri(
+			this.httpPort,
+		);
+		const externalWSUri = await this.resolveExternalWSUri(
+			this.wsPort,
+			this.wsPath,
+		);
 		this._onConnected.fire({
 			httpURI: externalHTTPUri,
 			wsURI: externalWSUri,
 			workspace: this._workspace,
 			httpPort: this.httpPort,
-			rootPrefix: this._rootPrefix
+			rootPrefix: this._rootPrefix,
 		});
 	}
 
@@ -82,7 +91,9 @@ export class Connection extends Disposable {
 	 * Use `vscode.env.asExternalUri` to determine the HTTP host and port on the user's machine.
 	 * @returns {Promise<vscode.Uri>} a promise for the HTTP URI
 	 */
-	public async resolveExternalHTTPUri(httpPort?: number): Promise<vscode.Uri> {
+	public async resolveExternalHTTPUri(
+		httpPort?: number,
+	): Promise<vscode.Uri> {
 		if (!httpPort) {
 			httpPort = this.httpPort;
 		}
@@ -94,7 +105,10 @@ export class Connection extends Disposable {
 	 * Use `vscode.env.asExternalUri` to determine the WS host and port on the user's machine.
 	 * @returns {Promise<vscode.Uri>} a promise for the WS URI
 	 */
-	public async resolveExternalWSUri(wsPort?: number, wsPath?: string): Promise<vscode.Uri> {
+	public async resolveExternalWSUri(
+		wsPort?: number,
+		wsPath?: string,
+	): Promise<vscode.Uri> {
 		if (!wsPort) {
 			wsPort = this.wsPort;
 		}
@@ -103,7 +117,10 @@ export class Connection extends Disposable {
 			wsPath = this.wsPath;
 		}
 		const wsPortUri = this.constructLocalUri(wsPort);
-		return vscode.Uri.joinPath(await vscode.env.asExternalUri(wsPortUri),wsPath); // ensure that this pathname is retained, as the websocket server must see this in order to authorize
+		return vscode.Uri.joinPath(
+			await vscode.env.asExternalUri(wsPortUri),
+			wsPath,
+		); // ensure that this pathname is retained, as the websocket server must see this in order to authorize
 	}
 
 	/**
@@ -112,7 +129,7 @@ export class Connection extends Disposable {
 	 * @returns the vscode Uri of this address
 	 */
 	public constructLocalUri(port: number, path?: string): vscode.Uri {
-		return vscode.Uri.parse(`http://${this.host}:${port}${path ?? ''}`);
+		return vscode.Uri.parse(`http://${this.host}:${port}${path ?? ""}`);
 	}
 
 	public get workspace(): vscode.WorkspaceFolder | undefined {
@@ -139,8 +156,8 @@ export class Connection extends Disposable {
 				vscode.l10n.t(
 					'The IP address "{0}" cannot be used to host the server. Using default IP {1}.',
 					this.host,
-					DEFAULT_HOST
-				)
+					DEFAULT_HOST,
+				),
 			);
 			this.host = DEFAULT_HOST;
 			this._onShouldResetInitHost.fire(this.host);
@@ -157,7 +174,9 @@ export class Connection extends Disposable {
 		const workspaceRoot = this.rootPath;
 
 		if (workspaceRoot && this._absPathInWorkspace(path)) {
-			return PathUtil.ConvertToPosixPath(path.substring(workspaceRoot.length));
+			return PathUtil.ConvertToPosixPath(
+				path.substring(workspaceRoot.length),
+			);
 		} else {
 			return undefined;
 		}
@@ -167,7 +186,9 @@ export class Connection extends Disposable {
 	 * Get the URI given the relative path
 	 */
 	public getAppendedURI(path: string): vscode.Uri {
-		return this.rootURI ? vscode.Uri.joinPath(this.rootURI, path) : vscode.Uri.file(path);
+		return this.rootURI
+			? vscode.Uri.joinPath(this.rootURI, path)
+			: vscode.Uri.file(path);
 	}
 
 	/**
