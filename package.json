@@ -1,15 +1,15 @@
 {
-	"activationEvents": [
-		"onWebviewPanel:browserPreview",
-		"onTaskType:Live Preview"
-	],
-	"aiKey": "AIF-d9b70cd4-b9f9-4d70-929b-a071c400b217",
-	"capabilities": {
-		"untrustedWorkspaces": {
-			"description": "Live Preview runs a server to host workspace files.",
-			"supported": false
-		},
-		"virtualWorkspaces": false
+	"name": "live-server",
+	"displayName": "Live Preview",
+	"description": "Hosts a local server in your workspace for you to preview your webpages on.",
+	"main": "./out/extension.js",
+	"scripts": {
+		"build-preview": "npx webpack-cli --mode development",
+		"compile": "node build/tools/codicon_copy.js && tsc -p ./",
+		"patch-prerelease": "node ./scripts/applyPatchForPrerelease.js",
+		"validate-stable": "node ./scripts/validateStable.js",
+		"webpack": "webpack --mode development",
+		"webpack-dev": "webpack --mode development --watch"
 	},
 	"contributes": {
 		"commands": [
@@ -260,12 +260,15 @@
 			}
 		]
 	},
+	"activationEvents": [
+		"onWebviewPanel:browserPreview",
+		"onTaskType:Live Preview"
+	],
 	"dependencies": {
 		"mime": "4.0.4",
 		"url": "0.11.4",
 		"ws": "8.18.0"
 	},
-	"description": "Hosts a local server in your workspace for you to preview your webpages on.",
 	"devDependencies": {
 		"@types/mime": "4.0.0",
 		"@types/node": "22.9.1",
@@ -275,18 +278,15 @@
 		"sinon": "19.0.2",
 		"ts-loader": "9.5.1"
 	},
-	"displayName": "Live Preview",
 	"icon": "icon.png",
-	"l10n": "./l10n",
-	"main": "./out/extension.js",
-	"name": "live-server",
 	"preview": true,
-	"scripts": {
-		"build-preview": "npx webpack-cli --mode development",
-		"compile": "node build/tools/codicon_copy.js && tsc -p ./",
-		"patch-prerelease": "node ./scripts/applyPatchForPrerelease.js",
-		"validate-stable": "node ./scripts/validateStable.js",
-		"webpack": "webpack --mode development",
-		"webpack-dev": "webpack --mode development --watch"
-	}
+	"aiKey": "AIF-d9b70cd4-b9f9-4d70-929b-a071c400b217",
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"description": "Live Preview runs a server to host workspace files.",
+			"supported": false
+		},
+		"virtualWorkspaces": false
+	},
+	"l10n": "./l10n"
 }
