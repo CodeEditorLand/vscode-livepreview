@@ -16,6 +16,7 @@ export class ExternalBrowserUtils {
 			browser === CustomExternalBrowser.default
 		) {
 			vscode.env.openExternal(vscode.Uri.parse(target));
+
 			return;
 		}
 

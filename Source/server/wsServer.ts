@@ -30,6 +30,7 @@ export class WSServerWithOriginCheck extends WebSocket.Server {
 	 */
 	public shouldHandle(req: http.IncomingMessage): boolean {
 		const origin = req.headers["origin"];
+
 		return <boolean>(
 			(super.shouldHandle(req) &&
 				origin &&
@@ -104,6 +105,7 @@ export class WSServer extends Disposable {
 	public start(wsPort: number): Promise<void> {
 		this._connection.wsPort = wsPort;
 		this._connection.wsPath = `/${randomBytes(20).toString("hex")}`;
+
 		return this._startWSServer(this._basePath ?? "");
 	}
 
@@ -191,6 +193,7 @@ export class WSServer extends Disposable {
 	private _handleWSConnection(basePath: string, ws: WebSocket): void {
 		ws.on("message", async (message: string) => {
 			const parsedMessage = JSON.parse(message);
+
 			switch (parsedMessage.command) {
 				// perform the url check
 				case "urlCheck": {
@@ -206,6 +209,7 @@ export class WSServer extends Disposable {
 						this._reporter.sendTelemetryEvent(
 							"server.ws.foundNonInjectable",
 						);
+
 						const sendData = {
 							command: "foundNonInjectable",
 							path: results.pathname,
@@ -230,6 +234,7 @@ export class WSServer extends Disposable {
 		urlString: string,
 	): Promise<{ injectable: boolean; pathname: string; port: number }> {
 		const url = new URL(urlString);
+
 		let absolutePath = path.join(basePath, url.pathname);
 
 		let port = 0;
@@ -245,6 +250,7 @@ export class WSServer extends Disposable {
 				await this._endpointManager.decodeLooseFileEndpoint(
 					PathUtil.ConvertToPosixPath(absolutePath),
 				);
+
 			if (
 				!decodedLocation ||
 				!(await PathUtil.FileExistsStat(decodedLocation)).exists
@@ -257,6 +263,7 @@ export class WSServer extends Disposable {
 		}
 
 		const existsStatInfo = await PathUtil.FileExistsStat(absolutePath);
+
 		if (
 			(existsStatInfo.stat && existsStatInfo.stat.isDirectory()) ||
 			isFileInjectable(absolutePath)

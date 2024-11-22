@@ -21,8 +21,11 @@ export class EndpointManager extends Disposable {
 
 	constructor() {
 		super();
+
 		let i = 0;
+
 		const workspaceDocuments = vscode.workspace.textDocuments;
+
 		while (i < workspaceDocuments.length) {
 			if (
 				!workspaceDocuments[i].isUntitled &&
@@ -42,12 +45,14 @@ export class EndpointManager extends Disposable {
 	 */
 	public async encodeLooseFileEndpoint(location: string): Promise<string> {
 		let fullParent = await PathUtil.GetParentDir(location);
+
 		const child = await PathUtil.GetFileName(location, true);
 
 		fullParent = PathUtil.ConvertToPosixPath(fullParent);
 		this.validEndpointRoots.add(fullParent);
 
 		let endpoint_prefix = `/endpoint_unsaved`;
+
 		if ((await PathUtil.FileExistsStat(location)).exists) {
 			endpoint_prefix = this.changePrefixesForAbsPathEncode(fullParent);
 		}
@@ -56,6 +61,7 @@ export class EndpointManager extends Disposable {
 
 		// don't use path.join so that we don't remove leading slashes
 		const ret = `${endpoint_prefix}/${child}`;
+
 		return ret;
 	}
 
@@ -69,9 +75,12 @@ export class EndpointManager extends Disposable {
 		const path = this.changePrefixesForAbsPathDecode(
 			PathUtil.UnescapePathParts(urlPath),
 		);
+
 		const actualPath = this.validPath(path);
+
 		if (actualPath) {
 			const exists = (await PathUtil.FileExistsStat(actualPath)).exists;
+
 			if (exists) {
 				return actualPath;
 			}

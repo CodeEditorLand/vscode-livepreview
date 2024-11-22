@@ -74,6 +74,7 @@ export class Connection extends Disposable {
 		const externalHTTPUri = await this.resolveExternalHTTPUri(
 			this.httpPort,
 		);
+
 		const externalWSUri = await this.resolveExternalWSUri(
 			this.wsPort,
 			this.wsPath,
@@ -98,6 +99,7 @@ export class Connection extends Disposable {
 			httpPort = this.httpPort;
 		}
 		const httpPortUri = this.constructLocalUri(httpPort);
+
 		return vscode.env.asExternalUri(httpPortUri);
 	}
 
@@ -117,6 +119,7 @@ export class Connection extends Disposable {
 			wsPath = this.wsPath;
 		}
 		const wsPortUri = this.constructLocalUri(wsPort);
+
 		return vscode.Uri.joinPath(
 			await vscode.env.asExternalUri(wsPortUri),
 			wsPath,

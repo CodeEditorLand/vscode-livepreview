@@ -112,6 +112,7 @@ export class ConnectionManager extends Disposable {
 			connection.onShouldResetInitHost((host) => (this._initHost = host)),
 		);
 		this._connections.set(workspaceFolder?.uri.toString(), connection);
+
 		return connection;
 	}
 

@@ -190,6 +190,7 @@ export class ServerGrouping extends Disposable {
 			}
 
 			this._connection.dispose();
+
 			return true;
 		}
 		return false;
@@ -208,6 +209,7 @@ export class ServerGrouping extends Disposable {
 
 		const port = this._connection.httpPort;
 		this._pendingServerWorkspaces.add(this.workspace?.uri.toString());
+
 		if (!this.isRunning) {
 			const freePort = await this._findFreePort(port);
 			await Promise.all([
@@ -307,7 +309,9 @@ export class ServerGrouping extends Disposable {
 	private async _findFreePort(startPort: number): Promise<number> {
 		return new Promise((resolve) => {
 			let port = startPort;
+
 			const sock = new net.Socket();
+
 			const host = this._connection.host;
 			sock.setTimeout(500);
 			sock.on("connect", function () {

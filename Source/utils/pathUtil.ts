@@ -23,11 +23,13 @@ export class PathUtil {
 	 */
 	public static EscapePathParts(file: string): string {
 		file = decodeURI(file);
+
 		const parts = file.split("/");
 
 		const newParts = parts
 			.filter((part) => part.length > 0)
 			.map((filterdPart) => encodeURI(filterdPart));
+
 		return newParts.join("/");
 	}
 
@@ -38,9 +40,11 @@ export class PathUtil {
 	 */
 	public static UnescapePathParts(file: string): string {
 		const parts = file.split("/");
+
 		const newParts = parts
 			.filter((part) => part.length > 0)
 			.map((filterdPart) => decodeURI(filterdPart));
+
 		return newParts.join("/");
 	}
 
@@ -51,6 +55,7 @@ export class PathUtil {
 	 */
 	public static async GetParentDir(file: string): Promise<string> {
 		const existsStatInfo = await PathUtil.FileExistsStat(file);
+
 		if (
 			existsStatInfo.exists &&
 			existsStatInfo.stat &&
@@ -72,6 +77,7 @@ export class PathUtil {
 	): Promise<string> {
 		if (returnEmptyOnDir) {
 			const existsStatInfo = await PathUtil.FileExistsStat(file);
+
 			if (
 				existsStatInfo.exists &&
 				existsStatInfo.stat &&
@@ -118,6 +124,7 @@ export class PathUtil {
 		file: vscode.Uri,
 	): Promise<string | undefined> {
 		const workspaceFolder = await PathUtil.GetWorkspaceFromURI(file);
+
 		if (!workspaceFolder) {
 			return undefined;
 		}
@@ -136,9 +143,11 @@ export class PathUtil {
 			return file;
 		}
 		file = PathUtil.ConvertToPosixPath(file);
+
 		const parts = file.split("/");
 
 		const newParts = [];
+
 		for (const part of parts) {
 			if (part.length > 0) {
 				newParts.push(part);
@@ -177,6 +186,7 @@ export class PathUtil {
 		): Promise<vscode.WorkspaceFolder | undefined> => {
 			const rootPrefix =
 				await PathUtil.GetValidServerRootForWorkspace(workspace);
+
 			return PathUtil.PathBeginsWith(
 				file,
 				path.join(workspace.uri.fsPath, rootPrefix),
@@ -218,6 +228,7 @@ export class PathUtil {
 			const rootPrefix = ignoreFileRoot
 				? ""
 				: await PathUtil.GetValidServerRootForWorkspace(workspace);
+
 			return (
 				await PathUtil.FileExistsStat(
 					path.join(workspace.uri.fsPath, rootPrefix, file),
@@ -230,6 +241,7 @@ export class PathUtil {
 		);
 
 		const idx = (await Promise.all(promises)).findIndex((exists) => exists);
+
 		if (idx === -1) {
 			return undefined;
 		}
@@ -245,6 +257,7 @@ export class PathUtil {
 		workspace: vscode.WorkspaceFolder,
 	): Promise<string> {
 		const root = SettingUtil.GetConfig(workspace).serverRoot;
+
 		return (
 			await PathUtil.FileExistsStat(path.join(workspace.uri.fsPath, root))
 		).exists

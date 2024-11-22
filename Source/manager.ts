@@ -55,6 +55,7 @@ class PanelSerializer
 	): Thenable<void> {
 		// fire event to parent, since all info needed to re-open a panel is in the parent
 		this._onShouldRevive.fire({ webviewPanel, state });
+
 		return Promise.resolve();
 	}
 }
@@ -142,6 +143,7 @@ export class Manager extends Disposable {
 					const avoidColumn =
 						this._previewManager.currentPanel.panel.viewColumn ??
 						vscode.ViewColumn.One;
+
 					const column: vscode.ViewColumn =
 						avoidColumn == vscode.ViewColumn.One
 							? avoidColumn + 1
@@ -160,6 +162,7 @@ export class Manager extends Disposable {
 				async (workspace) => {
 					const serverGrouping =
 						await this._getServerGroupingFromWorkspace(workspace);
+
 					if (!serverGrouping.isRunning) {
 						await serverGrouping.openServer();
 					} else {
@@ -194,10 +197,12 @@ export class Manager extends Disposable {
 		this._register(
 			serializer.onShouldRevive(async (e) => {
 				let relative = false;
+
 				let file: string = e.state.currentAddress ?? "/";
 
 				let workspace =
 					await PathUtil.GetWorkspaceFromRelativePath(file);
+
 				if (workspace) {
 					relative = true;
 				} else {
@@ -212,10 +217,12 @@ export class Manager extends Disposable {
 						await this._endpointManager.decodeLooseFileEndpoint(
 							file,
 						);
+
 					if (potentialFile) {
 						file = potentialFile;
 					} else {
 						e.webviewPanel.dispose();
+
 						return;
 					}
 				}
@@ -224,6 +231,7 @@ export class Manager extends Disposable {
 				// loose file workspace will be fetched if workspace is still undefined
 				const grouping =
 					await this._getServerGroupingFromWorkspace(workspace);
+
 				if (workspace) {
 					// PathExistsRelativeToAnyWorkspace already makes sure that file is under correct root prefix
 					fileUri = vscode.Uri.joinPath(
@@ -262,6 +270,7 @@ export class Manager extends Disposable {
 						const potentialGrouping = this._serverGroupings.get(
 							workspace.uri.toString(),
 						);
+
 						if (potentialGrouping) {
 							potentialGrouping.dispose();
 						}
@@ -318,6 +327,7 @@ export class Manager extends Disposable {
 
 	public dispose(): void {
 		this.closeAllServers();
+
 		super.dispose();
 	}
 
@@ -330,6 +340,7 @@ export class Manager extends Disposable {
 	 */
 	public async openPreview(): Promise<void> {
 		const activeFile = vscode.window.activeTextEditor?.document.uri;
+
 		const activeWorkspace = activeFile
 			? vscode.workspace.getWorkspaceFolder(activeFile)
 			: vscode.workspace.workspaceFolders?.[0];
@@ -374,6 +385,7 @@ export class Manager extends Disposable {
 					filePath,
 					ignoreFileRoot,
 				);
+
 		if (workspace) {
 			const file = vscode.Uri.joinPath(
 				workspace.uri,
@@ -389,12 +401,14 @@ export class Manager extends Disposable {
 				},
 				previewType,
 			);
+
 			return;
 		}
 
 		// no workspace, try to open as a loose file
 		if ((await PathUtil.FileExistsStat(filePath)).exists) {
 			const file = vscode.Uri.file(filePath);
+
 			return this.openPreviewAtFileUri(file, undefined, previewType);
 		} else {
 			vscode.window.showWarningMessage(
@@ -403,6 +417,7 @@ export class Manager extends Disposable {
 					filePath,
 				),
 			);
+
 			return this._openPreviewWithNoTarget();
 		}
 	}
@@ -413,6 +428,7 @@ export class Manager extends Disposable {
 		previewType?: string,
 	): Promise<void> {
 		let fileUri: vscode.Uri;
+
 		if (!file) {
 			if (this._previewManager.currentPanel?.panel.active) {
 				if (
@@ -430,6 +446,7 @@ export class Manager extends Disposable {
 				}
 			} else {
 				const activeFile = vscode.window.activeTextEditor?.document.uri;
+
 				if (activeFile) {
 					fileUri = activeFile;
 				} else {
@@ -444,6 +461,7 @@ export class Manager extends Disposable {
 		}
 
 		const internal = previewType === PreviewType.internalPreview;
+
 		const debug = previewType === PreviewType.externalDebugPreview;
 
 		return await this._handleOpenFile(
@@ -467,6 +485,7 @@ export class Manager extends Disposable {
 		}
 
 		let workspace;
+
 		if (file) {
 			workspace = await PathUtil.GetWorkspaceFromURI(file);
 		} else if (
@@ -529,19 +548,26 @@ export class Manager extends Disposable {
 		previewType?: string,
 	): Promise<void> {
 		const debug = previewType === PreviewType.externalDebugPreview;
+
 		const internal = this._isInternalPreview(previewType);
+
 		try {
 			if (link.scheme !== "https" && link.scheme !== "http") {
 				console.error(
 					`${link.scheme} does not correspond to a link URI`,
 				);
+
 				throw Error;
 			}
 			const pathStr = `${link.scheme}://${link.authority}`;
+
 			const url = new URL(pathStr);
+
 			const port = parseInt(url.port);
+
 			const connection =
 				this._connectionManager.getConnectionFromPort(port);
+
 			if (!connection) {
 				// don't have any workspace info, just treat it as relative path
 				return this.openPreviewAtFileString(link.path, previewType);
@@ -606,6 +632,7 @@ export class Manager extends Disposable {
 				this._serverGroupings.forEach((potentialServerGrouping) => {
 					if (potentialServerGrouping.port === port) {
 						serverGrouping = potentialServerGrouping;
+
 						return;
 					}
 				});
@@ -642,6 +669,7 @@ export class Manager extends Disposable {
 
 		const serverRootPrefix =
 			await PathUtil.GetValidServerRootForWorkspace(workspace);
+
 		if (serverRootPrefix === "") {
 			return true;
 		}
@@ -674,6 +702,7 @@ export class Manager extends Disposable {
 		let serverGrouping = this._serverGroupings.get(
 			workspace?.uri.toString(),
 		);
+
 		if (!serverGrouping) {
 			const connection =
 				await this._connectionManager.createAndAddNewConnection(
@@ -711,6 +740,7 @@ export class Manager extends Disposable {
 
 					this._statusBar.removeServer(workspace?.uri);
 					this._serverGroupings.delete(workspace?.uri.toString());
+
 					if (this._serverGroupings.size === 0) {
 						this._statusBar.serverOff();
 						vscode.commands.executeCommand(
@@ -767,6 +797,7 @@ export class Manager extends Disposable {
 		const isRunning = Array.from(this._serverGroupings.values()).filter(
 			(group) => group.isRunning,
 		);
+
 		return isRunning.length !== 0;
 	}
 
@@ -783,18 +814,23 @@ export class Manager extends Disposable {
 		// and we should check.
 
 		const internal = this._isInternalPreview();
+
 		const workspaces = vscode.workspace.workspaceFolders;
+
 		if (workspaces && workspaces.length > 0) {
 			for (let i = 0; i < workspaces.length; i++) {
 				const currWorkspace = workspaces[i];
+
 				const manager = this._serverGroupings.get(
 					currWorkspace.uri.toString(),
 				);
+
 				if (manager) {
 					this.openPreviewAtFileUri(undefined, {
 						workspace: currWorkspace,
 						manager: manager,
 					});
+
 					return;
 				}
 			}
@@ -841,6 +877,7 @@ export class Manager extends Disposable {
 		const connection = this._connectionManager.getConnection(
 			grouping.workspace,
 		);
+
 		if (!connection) {
 			return;
 		}

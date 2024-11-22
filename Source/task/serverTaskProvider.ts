@@ -124,6 +124,7 @@ export class ServerTaskProvider
 		workspace: vscode.WorkspaceFolder | undefined,
 	): boolean {
 		const term = this._terminals.get(workspace?.uri.toString());
+
 		return term?.running ?? false;
 	}
 
@@ -135,6 +136,7 @@ export class ServerTaskProvider
 		workspace: vscode.WorkspaceFolder | undefined,
 	): void {
 		const term = this._terminals.get(workspace?.uri.toString());
+
 		if (term && term.running) {
 			term.showServerMsg(msg);
 		}
@@ -151,6 +153,7 @@ export class ServerTaskProvider
 		workspace: vscode.WorkspaceFolder | undefined,
 	): void {
 		const term = this._terminals.get(workspace?.uri.toString());
+
 		if (term && term.running) {
 			term.serverStarted(externalUri, status);
 		}
@@ -166,6 +169,7 @@ export class ServerTaskProvider
 		workspace: vscode.WorkspaceFolder | undefined,
 	): void {
 		const term = this._terminals.get(workspace?.uri.toString());
+
 		if (term && term.running) {
 			if (now) {
 				term.serverStopped();
@@ -186,9 +190,11 @@ export class ServerTaskProvider
 			"tasks.terminal.startFromExtension" : {}
 		*/
 		this._reporter.sendTelemetryEvent("tasks.terminal.startFromExtension");
+
 		const tasks = await vscode.tasks.fetchTasks({
 			type: ServerTaskProvider.CustomBuildScriptType,
 		});
+
 		const selTasks = tasks.filter((x) => workspace === x.scope);
 
 		if (selTasks.length > 0) {
@@ -207,7 +213,9 @@ export class ServerTaskProvider
 	 */
 	public resolveTask(_task: vscode.Task): vscode.Task | undefined {
 		const definition: IServerTaskDefinition = <any>_task.definition;
+
 		let workspace: vscode.WorkspaceFolder | undefined;
+
 		try {
 			workspace = <vscode.WorkspaceFolder>_task.scope;
 		} catch (e) {
@@ -229,6 +237,7 @@ export class ServerTaskProvider
 		}
 
 		this._tasks = [];
+
 		if (vscode.workspace.workspaceFolders) {
 			vscode.workspace.workspaceFolders.forEach((workspace) => {
 				this._tasks!.push(
@@ -283,6 +292,7 @@ export class ServerTaskProvider
 			async (): Promise<ServerTaskTerminal> => {
 				// When the task is executed, this callback will run. Here, we set up for running the task.
 				const term = this._terminals.get(workspace?.uri.toString());
+
 				if (term && term.running) {
 					return term;
 				}
@@ -306,6 +316,7 @@ export class ServerTaskProvider
 				return newTerm;
 			},
 		);
+
 		const task = new vscode.Task(
 			definition,
 			workspace ?? vscode.TaskScope.Global,
@@ -318,6 +329,7 @@ export class ServerTaskProvider
 		// currently, re-using a terminal will cause the link provider to fail
 		// so we can create a new task terminal each time.
 		task.presentationOptions.panel = vscode.TaskPanelKind.New;
+
 		return task;
 	}
 }

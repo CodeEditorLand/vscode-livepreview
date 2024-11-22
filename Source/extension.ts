@@ -17,6 +17,7 @@ import {
 } from "./utils/settingsUtil";
 
 let reporter: TelemetryReporter;
+
 let serverPreview: Manager;
 
 export function activate(context: vscode.ExtensionContext): void {
@@ -195,6 +196,7 @@ export function activate(context: vscode.ExtensionContext): void {
 						PathUtil.ConvertToPosixPath(file.fsPath),
 						vscode.ConfigurationTarget.Global,
 					);
+
 					return;
 				}
 

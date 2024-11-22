@@ -112,12 +112,16 @@ export class ContentLoader extends Disposable {
 			"server.pageDoesNotExist" : {}
 		*/
 		this._reporter.sendTelemetryEvent("server.pageDoesNotExist");
+
 		const fileNotFound = vscode.l10n.t("File not found");
+
 		const relativePathFormatted = `<b>"${relativePath}"</b>`;
+
 		const fileNotFoundMsg = vscode.l10n.t(
 			"The file {0} cannot be found. It may have been moved, edited, or deleted.",
 			relativePathFormatted,
 		);
+
 		const htmlString = Buffer.from(`
 		<!DOCTYPE html>
 		<html>
@@ -145,10 +149,13 @@ export class ContentLoader extends Disposable {
 	 */
 	public createNoRootServer(): IRespInfo {
 		const noServerRoot = vscode.l10n.t("No Server Root");
+
 		const noWorkspaceOpen = vscode.l10n.t(
 			"This server is not based inside of a workspace, so the index does not direct to anything.",
 		);
+
 		const customMsg = `<p>${noWorkspaceOpen}</p>`;
+
 		const htmlString = Buffer.from(`
 		<!DOCTYPE html>
 		<html>
@@ -190,6 +197,7 @@ export class ContentLoader extends Disposable {
 		const childFiles = await this.fsReadDir(readPath);
 
 		const fileEntries = new Array<IIndexFileEntry>();
+
 		const dirEntries = new Array<IIndexDirEntry>();
 
 		if (relativePath != "/") {
@@ -198,10 +206,12 @@ export class ContentLoader extends Disposable {
 
 		for (const childFile of childFiles) {
 			const relativeFileWithChild = path.join(relativePath, childFile);
+
 			const absolutePath = path.join(readPath, childFile);
 
 			const fileStats = (await PathUtil.FileExistsStat(absolutePath))
 				.stat;
+
 			if (!fileStats) {
 				continue;
 			}
@@ -247,9 +257,13 @@ export class ContentLoader extends Disposable {
 		);
 
 		const indexOfTitlePath = vscode.l10n.t("Index of {0}", titlePath);
+
 		const name = vscode.l10n.t("Name");
+
 		const size = vscode.l10n.t("Size");
+
 		const dateModified = vscode.l10n.t("Date Modified");
+
 		const htmlString = Buffer.from(`
 		<!DOCTYPE html>
 		<html>
@@ -292,11 +306,15 @@ export class ContentLoader extends Disposable {
 		inFilesystem = true,
 	): Promise<IRespInfo> {
 		this._servedFiles.add(readPath);
+
 		const workspaceDocuments = vscode.workspace.textDocuments;
+
 		let i = 0;
+
 		let stream: Stream.Readable | fs.ReadStream | undefined;
 
 		let contentType = mime.getType(readPath) ?? "text/plain";
+
 		let contentLength = 0;
 
 		while (i < workspaceDocuments.length) {
@@ -314,6 +332,7 @@ export class ContentLoader extends Disposable {
 				const fileContentsBuffer = Buffer.from(fileContents);
 				stream = Stream.Readable.from(fileContentsBuffer);
 				contentLength = fileContentsBuffer.length;
+
 				break;
 			}
 			i++;
@@ -322,9 +341,11 @@ export class ContentLoader extends Disposable {
 		if (inFilesystem && i == workspaceDocuments.length) {
 			if (isFileInjectable(readPath)) {
 				const buffer = await PathUtil.FileRead(readPath);
+
 				const injectedFileContents = this._injectIntoFile(
 					buffer.toString(),
 				);
+
 				const injectedFileContentsBuffer =
 					Buffer.from(injectedFileContents);
 				stream = Stream.Readable.from(injectedFileContentsBuffer);
@@ -363,12 +384,15 @@ export class ContentLoader extends Disposable {
 		// 5. at the very beginning
 
 		let re: RegExp;
+
 		let tagEnd = 0;
+
 		for (const tag of this._insertionTags) {
 			re = new RegExp(`<${tag}[^>]*>`, "g");
 			re.test(contents);
 
 			tagEnd = re.lastIndex;
+
 			if (tagEnd != 0) {
 				break;
 			}
@@ -378,6 +402,7 @@ export class ContentLoader extends Disposable {
 			contents.substring(0, tagEnd) +
 			this._scriptInjection +
 			contents.substring(tagEnd);
+
 		return newContents;
 	}
 

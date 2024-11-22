@@ -43,6 +43,7 @@ export class StatusBarNotifier extends Disposable {
 
 	private _refreshBar(): void {
 		let portsLabel: string;
+
 		let portsTooltip: string;
 
 		if (this._ports.size === 1) {
@@ -109,6 +110,7 @@ export class StatusBarNotifier extends Disposable {
 	 */
 	public removeServer(uri: vscode.Uri | undefined): void {
 		this._ports.delete(uri?.toString());
+
 		if (this._ports.size === 0) {
 			this.serverOff();
 		} else {

@@ -75,6 +75,7 @@ export class PreviewManager extends Disposable {
 				path,
 				connection,
 			);
+
 			return;
 		}
 
@@ -112,6 +113,7 @@ export class PreviewManager extends Disposable {
 			: "/";
 
 		const url = `http://${connection.host}:${connection.httpPort}${path}`;
+
 		if (debug) {
 			vscode.commands.executeCommand("extension.js-debug.debugLink", url);
 		} else {
@@ -142,6 +144,7 @@ export class PreviewManager extends Disposable {
 				),
 			],
 		};
+
 		return options;
 	}
 
@@ -153,6 +156,7 @@ export class PreviewManager extends Disposable {
 			"preview.fileOutOfWorkspace" : {}
 		*/
 		this._reporter.sendTelemetryEvent("preview.fileOutOfWorkspace");
+
 		if (
 			!this._notifiedAboutLooseFiles &&
 			SettingUtil.GetConfig().notifyOnOpenLooseFile
@@ -188,6 +192,7 @@ export class PreviewManager extends Disposable {
 		connection: Connection,
 	): Promise<string> {
 		let path = "/";
+
 		if (!connection?.workspace) {
 			this._notifyLooseFileOpen();
 			path = await this._endpointManager.encodeLooseFileEndpoint(
@@ -241,9 +246,11 @@ export class PreviewManager extends Disposable {
 		this._register(
 			this.currentPanel.onDispose(() => {
 				this.currentPanel = undefined;
+
 				const closeServerDelay =
 					SettingUtil.GetConfig()
 						.serverKeepAliveAfterEmbeddedPreviewClose;
+
 				if (closeServerDelay !== 0) {
 					this._currentTimeout = setTimeout(
 						() => {

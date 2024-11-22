@@ -76,6 +76,7 @@ export class HttpServer extends Disposable {
 	public start(port: number): Promise<void> {
 		this._connection.httpPort = port;
 		this._contentLoader.resetServedFiles();
+
 		return this._startHttpServer();
 	}
 
@@ -183,11 +184,14 @@ export class HttpServer extends Disposable {
 
 		if (!req || !req.url) {
 			reportAndReturn(500);
+
 			return;
 		}
 
 		const expectedUri = await this._connection.resolveExternalHTTPUri();
+
 		const expectedHost = expectedUri.authority;
+
 		if (
 			(req.headers.host !== `localhost:${this._connection.httpPort}` &&
 				req.headers.host !== this._connection.host &&
@@ -201,14 +205,18 @@ export class HttpServer extends Disposable {
 		}
 
 		let stream: Stream.Readable | fs.ReadStream | undefined;
+
 		let contentLength: number | undefined;
+
 		if (req.url === INJECTED_ENDPOINT_NAME) {
 			const respInfo = this._contentLoader.loadInjectedJS();
+
 			const contentType = respInfo.ContentType ?? "";
 			contentLength = respInfo.ContentLength;
 			writeHeader(200, contentType, contentLength);
 			stream = respInfo.Stream;
 			stream?.pipe(res);
+
 			return;
 		}
 		// can't use vscode.Uri.joinPath because that doesn't parse out the query
@@ -232,29 +240,35 @@ export class HttpServer extends Disposable {
 
 		if (basePath === "" && (URLPathName === "/" || URLPathName === "")) {
 			writePageNotFound(true);
+
 			return;
 		}
 
 		let looseFile = false;
 		URLPathName = decodeURI(URLPathName);
+
 		let absoluteReadPath = path.join(basePath, URLPathName);
 
 		let contentType = "application/octet-stream";
+
 		if (basePath === "") {
 			if (URLPathName.startsWith("/endpoint_unsaved")) {
 				const untitledFileName = URLPathName.substring(
 					URLPathName.lastIndexOf("/") + 1,
 				);
+
 				const content = await this._contentLoader.getFileStream(
 					untitledFileName,
 					false,
 				);
+
 				if (content.Stream) {
 					stream = content.Stream;
 					contentType = content.ContentType ?? "";
 					contentLength = content.ContentLength;
 					writeHeader(200, contentType, content.ContentLength);
 					stream.pipe(res);
+
 					return;
 				}
 			}
@@ -264,6 +278,7 @@ export class HttpServer extends Disposable {
 					URLPathName,
 				);
 			looseFile = true;
+
 			if (
 				decodedReadPath &&
 				(await PathUtil.FileExistsStat(decodedReadPath)).exists
@@ -271,6 +286,7 @@ export class HttpServer extends Disposable {
 				absoluteReadPath = decodedReadPath;
 			} else {
 				writePageNotFound();
+
 				return;
 			}
 		} else if (!PathUtil.PathBeginsWith(absoluteReadPath, basePath)) {
@@ -284,8 +300,10 @@ export class HttpServer extends Disposable {
 		// path should be valid now
 		const absPathExistsStatInfo =
 			await PathUtil.FileExistsStat(absoluteReadPath);
+
 		if (!absPathExistsStatInfo.exists) {
 			writePageNotFound();
+
 			return;
 		}
 		if (
@@ -312,6 +330,7 @@ export class HttpServer extends Disposable {
 				).exists
 			) {
 				absoluteReadPath = path.join(absoluteReadPath, "index.html");
+
 				const respInfo =
 					await this._contentLoader.getFileStream(absoluteReadPath);
 				stream = respInfo.Stream;
@@ -341,16 +360,19 @@ export class HttpServer extends Disposable {
 		if (stream) {
 			stream.on("error", () => {
 				reportAndReturn(500);
+
 				return;
 			});
 			writeHeader(200, contentType, contentLength);
 			stream.pipe(res);
 		} else {
 			reportAndReturn(500);
+
 			return;
 		}
 
 		this._reportStatus(req, res);
+
 		return;
 	}
 

@@ -54,6 +54,7 @@ export class ServerTaskTerminal
 		private readonly _executeServer = true,
 	) {
 		super();
+
 		if (this._executeServer) {
 			/* __GDPR__
 				"tasks.terminal.start" : {}
@@ -81,6 +82,7 @@ export class ServerTaskTerminal
 
 	public close(): void {
 		this.running = false;
+
 		if (this._executeServer) {
 			this._onRequestToCloseServerEmitter.fire(this._workspace);
 			this._onDidClose.fire(0);
@@ -109,6 +111,7 @@ export class ServerTaskTerminal
 		status: ServerStartedStatus,
 	): void {
 		const formattedAddress = this._formatAddr(externalUri.toString());
+
 		switch (status) {
 			case ServerStartedStatus.JUST_STARTED: {
 				this._onDidWrite.fire(
@@ -117,6 +120,7 @@ export class ServerTaskTerminal
 						formattedAddress + "\r\n",
 					),
 				);
+
 				break;
 			}
 			case ServerStartedStatus.STARTED_BY_EMBEDDED_PREV: {
@@ -126,6 +130,7 @@ export class ServerTaskTerminal
 						formattedAddress + "\r\n> ",
 					),
 				);
+
 				break;
 			}
 		}
@@ -191,6 +196,7 @@ export class ServerTaskTerminal
 	 */
 	private _colorHttpStatus(status: number): string {
 		let color = TerminalColor.green;
+
 		if (status >= 400) {
 			color = TerminalColor.red;
 		} else if (status >= 300) {
@@ -205,11 +211,13 @@ export class ServerTaskTerminal
 	 */
 	private _getSecondColonPos(str: string): number {
 		const indexColon = str.indexOf(":");
+
 		if (indexColon == -1) {
 			return str.length;
 		}
 
 		const indexSecondColon = str.indexOf(":", indexColon + 1);
+
 		return indexSecondColon == -1 ? str.length : indexSecondColon;
 	}
 
@@ -219,8 +227,11 @@ export class ServerTaskTerminal
 	 */
 	private _formatAddr(addr: string): string {
 		const indexSecondColon = this._getSecondColonPos(addr);
+
 		const firstHalfOfString = addr.substring(0, indexSecondColon);
+
 		const lastHalfOfString = addr.substring(indexSecondColon);
+
 		return (
 			TerminalStyleUtil.ColorTerminalString(
 				firstHalfOfString,

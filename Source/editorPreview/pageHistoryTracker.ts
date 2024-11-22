@@ -56,6 +56,7 @@ export class PageHistory extends Disposable {
 	 */
 	public goForward(): INavResponse {
 		const action = new Array<NavEditCommands>();
+
 		if (this._backstep > 0) {
 			const path = this._history[this._backstep - 1];
 			this._backstep -= 1;
@@ -82,6 +83,7 @@ export class PageHistory extends Disposable {
 	 */
 	public goBackward(): INavResponse {
 		const action = new Array<NavEditCommands>();
+
 		if (this._backstep < this._history.length - 1) {
 			const path = this._history[this._backstep + 1];
 			this._backstep += 1;
@@ -116,8 +118,11 @@ export class PageHistory extends Disposable {
 	): INavResponse | undefined {
 		address = PathUtil.ConvertToPosixPath(address);
 		address = PathUtil.EscapePathParts(address);
+
 		const action = new Array<NavEditCommands>();
+
 		const lastItem = this._history[this._backstep];
+
 		if (
 			this._backstep < this._history.length &&
 			address === lastItem.path &&

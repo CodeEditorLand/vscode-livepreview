@@ -55,6 +55,7 @@ export class serverTaskLinkProvider
 		token: vscode.CancellationToken,
 	): Promise<vscode.TerminalLink[]> {
 		const links = new Array<vscode.TerminalLink>();
+
 		if (
 			!context.terminal.creationOptions.name ||
 			!this._isLivePreviewTerminal(context.terminal.creationOptions.name)
@@ -69,6 +70,7 @@ export class serverTaskLinkProvider
 		);
 
 		this._findPathnameRegex(context.line, links);
+
 		return links;
 	}
 
@@ -108,14 +110,18 @@ export class serverTaskLinkProvider
 			`(?<=\\s)\\/([^\\0<>\\?\\|\\s!\`&*()\\[\\]'":;]*)\\?*[\\w=]*`,
 			"g",
 		);
+
 		let partialLinkMatches: RegExpExecArray | null;
+
 		do {
 			partialLinkMatches = partialLinkRegex.exec(input);
+
 			if (partialLinkMatches) {
 				for (let i = 0; i < partialLinkMatches.length; i++) {
 					if (partialLinkMatches[i]) {
 						const queryIndex =
 							partialLinkMatches[i].lastIndexOf("?");
+
 						const link =
 							queryIndex == -1
 								? partialLinkMatches[i]
@@ -123,10 +129,13 @@ export class serverTaskLinkProvider
 										0,
 										queryIndex,
 									);
+
 						const isDir = link.endsWith("/");
+
 						const tooltip = isDir
 							? vscode.l10n.t("Reveal Folder ")
 							: vscode.l10n.t("Open File ");
+
 						const tl = {
 							startIndex: partialLinkMatches.index,
 							length: partialLinkMatches[i].length,
@@ -154,7 +163,9 @@ export class serverTaskLinkProvider
 		connection: Connection,
 	): Promise<void> {
 		const hostUri = connection.constructLocalUri(connection.httpPort);
+
 		const extHostUri = await connection.resolveExternalHTTPUri();
+
 		const extHostStr = escapeRegExp(
 			`${extHostUri.scheme}://${extHostUri.authority}`,
 		);
@@ -165,8 +176,10 @@ export class serverTaskLinkProvider
 		);
 
 		let fullURLMatches: RegExpExecArray | null;
+
 		do {
 			fullURLMatches = fullLinkRegex.exec(input);
+
 			if (fullURLMatches) {
 				for (let i = 0; i < fullURLMatches.length; i++) {
 					if (fullURLMatches[i]) {
@@ -199,8 +212,11 @@ export class serverTaskLinkProvider
 		isDir: boolean,
 	): Promise<void> {
 		file = unescape(file);
+
 		const workspace = await PathUtil.GetWorkspaceFromRelativePath(file);
+
 		const connection = this._connectionManager.getConnection(workspace);
+
 		const uri = connection
 			? connection.getAppendedURI(file)
 			: vscode.Uri.file(

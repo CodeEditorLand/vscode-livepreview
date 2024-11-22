@@ -132,8 +132,11 @@ export class WebviewComm extends Disposable {
 		connection: Connection,
 	): Promise<void> {
 		this.currentConnection = connection;
+
 		const httpHost = await this.resolveHost(connection);
+
 		const url = await this.constructAddress(URLExt, connection, httpHost);
+
 		const wsURI = await this._resolveWsHost(connection);
 		this._panel.webview.html = this._getHtmlForWebview(
 			webview,
@@ -191,6 +194,7 @@ export class WebviewComm extends Disposable {
 			"media",
 			"vscode.css",
 		);
+
 		const codiconsPathMainPath = vscode.Uri.joinPath(
 			this._extensionUri,
 			"media",
@@ -199,20 +203,30 @@ export class WebviewComm extends Disposable {
 
 		// Uri to load styles into webview
 		const stylesMainUri = webview.asWebviewUri(stylesPathMainPath);
+
 		const codiconsUri = webview.asWebviewUri(codiconsPathMainPath);
 
 		// Use a nonce to only allow specific scripts to be run
 		const nonce = randomBytes(16).toString("base64");
 
 		const back = vscode.l10n.t("Back");
+
 		const forward = vscode.l10n.t("Forward");
+
 		const reload = vscode.l10n.t("Reload");
+
 		const more = vscode.l10n.t("More Browser Actions");
+
 		const find_prev = vscode.l10n.t("Previous");
+
 		const find_next = vscode.l10n.t("Next");
+
 		const find_x = vscode.l10n.t("Close");
+
 		const browser_open = vscode.l10n.t("Open in Browser");
+
 		const find = vscode.l10n.t("Find in Page");
+
 		const devtools_open = vscode.l10n.t("Open Devtools Pane");
 
 		return `<!DOCTYPE html>
@@ -351,18 +365,26 @@ export class WebviewComm extends Disposable {
 	 */
 	public handleNavAction(command: NavEditCommands): void {
 		let text = {};
+
 		switch (command) {
 			case NavEditCommands.DISABLE_BACK:
 				text = { element: "back", disabled: true };
+
 				break;
+
 			case NavEditCommands.ENABLE_BACK:
 				text = { element: "back", disabled: false };
+
 				break;
+
 			case NavEditCommands.DISABLE_FORWARD:
 				text = { element: "forward", disabled: true };
+
 				break;
+
 			case NavEditCommands.ENABLE_FORWARD:
 				text = { element: "forward", disabled: false };
+
 				break;
 		}
 
@@ -393,7 +415,9 @@ export class WebviewComm extends Disposable {
 			connection,
 		});
 		this.currentAddress = pathname;
+
 		const response = this._pageHistory?.addHistory(pathname, connection);
+
 		if (response) {
 			for (const action of response.actions) {
 				this.handleNavAction(action);
@@ -406,6 +430,7 @@ export class WebviewComm extends Disposable {
 	 */
 	public updateForwardBackArrows(): void {
 		const navigationStatus = this._pageHistory.currentCommands;
+
 		for (const status of navigationStatus) {
 			this.handleNavAction(status);
 		}
@@ -418,6 +443,7 @@ export class WebviewComm extends Disposable {
 		const response = this._pageHistory.goForward();
 
 		const page = response.address;
+
 		if (page != undefined) {
 			await this.goToFile(page.path, false, page.connection);
 		}
@@ -434,6 +460,7 @@ export class WebviewComm extends Disposable {
 		const response = this._pageHistory.goBackward();
 
 		const page = response.address;
+
 		if (page != undefined) {
 			await this.goToFile(page.path, false, page.connection);
 		}

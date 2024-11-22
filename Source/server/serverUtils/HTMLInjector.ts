@@ -35,6 +35,7 @@ export class HTMLInjector extends Disposable {
 		private readonly _connection: Connection,
 	) {
 		super();
+
 		const scriptPath = path.join(
 			_extensionUri.fsPath,
 			"media",
@@ -80,6 +81,7 @@ export class HTMLInjector extends Disposable {
 		const wsURL = `${httpUri.scheme === "https" ? "wss" : "ws"}://${
 			wsUri.authority
 		}${wsUri.path}`;
+
 		let httpURL = `${httpUri.scheme}://${httpUri.authority}`;
 
 		if (httpURL.endsWith("/")) {
@@ -105,6 +107,7 @@ export class HTMLInjector extends Disposable {
 				replace.replacement +
 				script.substring(placeHolderIndex + replace.original.length);
 		});
+
 		return script;
 	}
 

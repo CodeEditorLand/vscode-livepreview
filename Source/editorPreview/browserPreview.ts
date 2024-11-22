@@ -142,7 +142,9 @@ export class BrowserPreview extends Disposable {
 		switch (message.command) {
 			case "alert":
 				vscode.window.showErrorMessage(message.text);
+
 				return;
+
 			case "update-path": {
 				const msgJSON = JSON.parse(message.text);
 				this._webviewComm.handleNewPageLoad(
@@ -150,40 +152,54 @@ export class BrowserPreview extends Disposable {
 					this.currentConnection,
 					msgJSON.title,
 				);
+
 				return;
 			}
 			case "go-back":
 				await this._webviewComm.goBack();
+
 				return;
+
 			case "go-forward":
 				await this._webviewComm.goForwards();
+
 				return;
+
 			case "open-browser":
 				await this._openCurrentAddressInExternalBrowser();
+
 				return;
+
 			case "add-history": {
 				const msgJSON = JSON.parse(message.text);
+
 				const connection =
 					this._connectionManager.getConnectionFromPort(msgJSON.port);
 				await this._webviewComm.setUrlBar(msgJSON.path, connection);
+
 				return;
 			}
 			case "refresh-back-forward-buttons":
 				this._webviewComm.updateForwardBackArrows();
+
 				return;
+
 			case "go-to-file":
 				await this._goToFullAddress(message.text);
+
 				return;
 
 			case "console": {
 				const msgJSON = JSON.parse(message.text);
 				this._handleConsole(msgJSON.type, msgJSON.data);
+
 				return;
 			}
 			case "devtools-open":
 				vscode.commands.executeCommand(
 					"workbench.action.webview.openDeveloperTools",
 				);
+
 				return;
 		}
 	}
@@ -207,6 +223,7 @@ export class BrowserPreview extends Disposable {
 	dispose(): void {
 		this._onDisposeEmitter.fire();
 		this._panel.dispose();
+
 		super.dispose();
 	}
 
@@ -217,6 +234,7 @@ export class BrowserPreview extends Disposable {
 		const givenURL = await this._webviewComm.constructAddress(
 			this._webviewComm.currentAddress,
 		);
+
 		const uri = vscode.Uri.parse(givenURL.toString());
 
 		const previewType = SettingUtil.GetExternalPreviewType();
@@ -269,6 +287,7 @@ export class BrowserPreview extends Disposable {
 	private async _goToFullAddress(address: string): Promise<void> {
 		try {
 			const port = new URL(address).port;
+
 			if (port === undefined) {
 				throw Error;
 			}
@@ -281,7 +300,9 @@ export class BrowserPreview extends Disposable {
 			}
 
 			const host = await this._webviewComm.resolveHost(connection);
+
 			let hostString = host.toString();
+
 			if (hostString.endsWith("/")) {
 				hostString = hostString.substring(0, hostString.length - 1);
 			}
@@ -304,6 +325,7 @@ export class BrowserPreview extends Disposable {
 	): Promise<void> {
 		if (title == "") {
 			pathname = decodeURI(pathname);
+
 			if (pathname.length > 0 && pathname[0] == "/") {
 				if (connection.workspace) {
 					this._panel.title = await PathUtil.GetFileName(pathname);

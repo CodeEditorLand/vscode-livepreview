@@ -18,6 +18,7 @@ export interface ILivePreviewConfigItem {
 	serverKeepAliveAfterEmbeddedPreviewClose: number;
 	notifyOnOpenLooseFile: boolean;
 	runTaskWithExternalPreview: boolean;
+
 	defaultPreviewPath: string;
 	debugOnExternalPreview: boolean;
 	hostIP: string;
@@ -99,6 +100,7 @@ export class SettingUtil {
 			SETTINGS_SECTION_ID,
 			scope,
 		);
+
 		return {
 			portNumber: config.get<number>(Settings.portNumber, 3000),
 			showServerStatusNotifications: config.get<boolean>(
