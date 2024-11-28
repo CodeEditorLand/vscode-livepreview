@@ -6,6 +6,7 @@
 import * as vscode from "vscode";
 
 export const WS_URL_PLACEHOLDER = "${WS_URL}";
+
 export const HTTP_URL_PLACEHOLDER = "${HTTP_URL}";
 
 export const INIT_PANEL_TITLE = "/";
