@@ -12,19 +12,31 @@ import { DEFAULT_HTTP_HEADERS } from "./constants";
  */
 export interface ILivePreviewConfigItem {
 	portNumber: number;
+
 	showServerStatusNotifications: boolean;
+
 	autoRefreshPreview: AutoRefreshPreview;
+
 	openPreviewTarget: OpenPreviewTarget;
+
 	serverKeepAliveAfterEmbeddedPreviewClose: number;
+
 	notifyOnOpenLooseFile: boolean;
+
 	runTaskWithExternalPreview: boolean;
 
 	defaultPreviewPath: string;
+
 	debugOnExternalPreview: boolean;
+
 	hostIP: string;
+
 	customExternalBrowser: CustomExternalBrowser;
+
 	serverRoot: string;
+
 	previewDebounceDelay: number;
+
 	httpHeaders: any;
 }
 

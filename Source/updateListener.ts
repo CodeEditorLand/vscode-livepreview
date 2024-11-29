@@ -17,7 +17,9 @@ import { AutoRefreshPreview, SettingUtil } from "./utils/settingsUtil";
  */
 export class UpdateListener extends Disposable {
 	private readonly _watcher;
+
 	private _debounceTimer: NodeJS.Timeout | undefined;
+
 	private _debounceDelay: number;
 
 	private readonly _shouldRefreshPreviews = this._register(
@@ -28,6 +30,7 @@ export class UpdateListener extends Disposable {
 
 	constructor(_userDataDir: string | undefined) {
 		super();
+
 		this._watcher = vscode.workspace.createFileSystemWatcher("**");
 
 		const notUserDataDirChange = function (file: vscode.Uri): boolean {
@@ -37,6 +40,7 @@ export class UpdateListener extends Disposable {
 					!PathUtil.PathBeginsWith(file.fsPath, _userDataDir))
 			);
 		};
+
 		this._debounceDelay = SettingUtil.GetConfig().previewDebounceDelay;
 
 		this._register(
@@ -145,6 +149,7 @@ export class UpdateListener extends Disposable {
 
 	private _refreshPreview(): void {
 		clearTimeout(this._debounceTimer);
+
 		this._debounceTimer = setTimeout(() => {
 			this._shouldRefreshPreviews.fire();
 		}, this._debounceDelay);

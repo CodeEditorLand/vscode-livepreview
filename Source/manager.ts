@@ -25,7 +25,9 @@ import { PreviewType, SettingUtil } from "./utils/settingsUtil";
 
 export interface IOpenFileOptions {
 	workspace?: vscode.WorkspaceFolder;
+
 	port?: number;
+
 	manager?: ServerGrouping;
 }
 
@@ -43,6 +45,7 @@ class PanelSerializer
 	private readonly _onShouldRevive = this._register(
 		new vscode.EventEmitter<{
 			webviewPanel: vscode.WebviewPanel;
+
 			state: any;
 		}>(),
 	);
@@ -66,12 +69,19 @@ class PanelSerializer
  */
 export class Manager extends Disposable {
 	private _serverGroupings: Map<string | undefined, ServerGrouping>;
+
 	private _connectionManager: ConnectionManager;
+
 	private readonly _endpointManager: EndpointManager;
+
 	private readonly _previewManager: PreviewManager;
+
 	private readonly _statusBar: StatusBarNotifier;
+
 	private readonly _serverTaskProvider: ServerTaskProvider;
+
 	private readonly _updateListener: UpdateListener;
+
 	private readonly _pendingServerWorkspaces: Set<string | undefined>;
 
 	constructor(
@@ -80,13 +90,17 @@ export class Manager extends Disposable {
 		_userDataDir: string | undefined,
 	) {
 		super();
+
 		this._serverGroupings = new Map<string | undefined, ServerGrouping>();
+
 		this._pendingServerWorkspaces = new Set<string | undefined>();
+
 		this._connectionManager = this._register(new ConnectionManager());
 
 		this._register(
 			this._connectionManager.onConnected((e) => {
 				this._statusBar.setServer(e.workspace?.uri, e.httpPort);
+
 				vscode.commands.executeCommand(
 					"setContext",
 					LIVE_PREVIEW_SERVER_ON,
@@ -148,6 +162,7 @@ export class Manager extends Disposable {
 						avoidColumn == vscode.ViewColumn.One
 							? avoidColumn + 1
 							: avoidColumn - 1;
+
 					vscode.commands.executeCommand("vscode.open", uri, {
 						viewColumn: column,
 					});
@@ -168,6 +183,7 @@ export class Manager extends Disposable {
 					} else {
 						const uri =
 							await serverGrouping.connection.resolveExternalHTTPUri();
+
 						this._serverTaskProvider.serverStarted(
 							uri,
 							ServerStartedStatus.STARTED_BY_EMBEDDED_PREV,
@@ -244,11 +260,13 @@ export class Manager extends Disposable {
 				} else {
 					fileUri = vscode.Uri.parse(file);
 				}
+
 				grouping.createOrShowEmbeddedPreview(
 					e.webviewPanel,
 					fileUri,
 					relative,
 				);
+
 				e.webviewPanel.webview.options =
 					this._previewManager.getWebviewOptions();
 			}),
@@ -301,6 +319,7 @@ export class Manager extends Disposable {
 		);
 
 		this._updateListener = this._register(new UpdateListener(_userDataDir));
+
 		this._register(
 			this._updateListener.shouldRefreshPreviews(() =>
 				this._refreshBrowsers(),
@@ -394,6 +413,7 @@ export class Manager extends Disposable {
 					: await PathUtil.GetValidServerRootForWorkspace(workspace),
 				filePath,
 			);
+
 			await this.openPreviewAtFileUri(
 				file,
 				{
@@ -456,6 +476,7 @@ export class Manager extends Disposable {
 		} else {
 			fileUri = file;
 		}
+
 		if (!previewType) {
 			previewType = SettingUtil.GetPreviewType();
 		}
@@ -496,6 +517,7 @@ export class Manager extends Disposable {
 				const matchGrouping = Array.from(
 					this._serverGroupings.values(),
 				).find((grouping) => grouping.workspace && grouping.isRunning);
+
 				workspace =
 					matchGrouping?.workspace ??
 					vscode.workspace.workspaceFolders[0];
@@ -518,19 +540,25 @@ export class Manager extends Disposable {
 		const disposables: vscode.Disposable[] = [];
 
 		const quickPick = vscode.window.createQuickPick<IServerQuickPickItem>();
+
 		disposables.push(quickPick);
 
 		quickPick.matchOnDescription = true;
+
 		quickPick.placeholder = vscode.l10n.t(
 			"Select the port that corresponds to the server that you want to stop",
 		);
+
 		quickPick.items = await this._getServerPicks();
 
 		disposables.push(
 			quickPick.onDidAccept(() => {
 				const selectedItem = quickPick.selectedItems[0];
+
 				selectedItem.accept();
+
 				quickPick.hide();
+
 				disposables.forEach((d) => d.dispose());
 			}),
 		);
@@ -559,6 +587,7 @@ export class Manager extends Disposable {
 
 				throw Error;
 			}
+
 			const pathStr = `${link.scheme}://${link.authority}`;
 
 			const url = new URL(pathStr);
@@ -592,6 +621,7 @@ export class Manager extends Disposable {
 			}
 
 			const file = connection.getAppendedURI(link.path);
+
 			this._openPreview(internal, serverGrouping, file, debug);
 		} catch (e) {
 			vscode.window.showErrorMessage(
@@ -621,6 +651,7 @@ export class Manager extends Disposable {
 		if (file.scheme !== "file") {
 			console.error("Tried to open a non-file URI with file opener");
 		}
+
 		if (!serverGrouping) {
 			if (workspace) {
 				serverGrouping = await this._getServerGroupingFromWorkspace(
@@ -638,6 +669,7 @@ export class Manager extends Disposable {
 				});
 			} else {
 				workspace = await PathUtil.GetWorkspaceFromURI(file);
+
 				serverGrouping =
 					await this._getServerGroupingFromWorkspace(workspace);
 			}
@@ -716,6 +748,7 @@ export class Manager extends Disposable {
 					);
 				}),
 			);
+
 			serverGrouping = this._register(
 				new ServerGrouping(
 					this._extensionUri,
@@ -739,19 +772,23 @@ export class Manager extends Disposable {
 					}
 
 					this._statusBar.removeServer(workspace?.uri);
+
 					this._serverGroupings.delete(workspace?.uri.toString());
 
 					if (this._serverGroupings.size === 0) {
 						this._statusBar.serverOff();
+
 						vscode.commands.executeCommand(
 							"setContext",
 							LIVE_PREVIEW_SERVER_ON,
 							false,
 						);
 					}
+
 					this._connectionManager.removeConnection(workspace);
 				}),
 			);
+
 			this._register(
 				serverGrouping.onShouldLaunchEmbeddedPreview((e) =>
 					this._previewManager.launchFileInEmbeddedPreview(
@@ -761,6 +798,7 @@ export class Manager extends Disposable {
 					),
 				),
 			);
+
 			this._register(
 				serverGrouping.onShouldLaunchExternalPreview((e) =>
 					this._previewManager.launchFileInExternalBrowser(
@@ -770,6 +808,7 @@ export class Manager extends Disposable {
 					),
 				),
 			);
+
 			this._serverGroupings.set(
 				workspace?.uri.toString(),
 				serverGrouping,
@@ -805,6 +844,7 @@ export class Manager extends Disposable {
 		if (!previewType) {
 			previewType = SettingUtil.GetPreviewType();
 		}
+
 		return previewType === PreviewType.internalPreview;
 	}
 
@@ -838,10 +878,12 @@ export class Manager extends Disposable {
 			const grouping = await this._getServerGroupingFromWorkspace(
 				workspaces[0],
 			);
+
 			this._openPreview(internal, grouping, undefined);
 		} else {
 			const grouping =
 				await this._getServerGroupingFromWorkspace(undefined);
+
 			this._openPreview(internal, grouping, undefined);
 		}
 	}
@@ -881,6 +923,7 @@ export class Manager extends Disposable {
 		if (!connection) {
 			return;
 		}
+
 		return {
 			label: `$(radio-tower) ${connection.httpPort}`,
 			description:

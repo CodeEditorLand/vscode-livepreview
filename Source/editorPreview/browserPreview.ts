@@ -24,19 +24,25 @@ import { WebviewComm } from "./webviewComm";
  */
 export class BrowserPreview extends Disposable {
 	public static readonly viewType = "browserPreview";
+
 	private readonly _webviewComm: WebviewComm;
+
 	private readonly _onDisposeEmitter = this._register(
 		new vscode.EventEmitter<void>(),
 	);
+
 	public readonly onDispose = this._onDisposeEmitter.event;
 
 	private readonly _onShouldLaunchPreview = this._register(
 		new vscode.EventEmitter<{
 			uri?: vscode.Uri;
+
 			options?: IOpenFileOptions;
+
 			previewType?: string;
 		}>(),
 	);
+
 	public readonly onShouldLaunchPreview = this._onShouldLaunchPreview.event;
 
 	constructor(
@@ -49,6 +55,7 @@ export class BrowserPreview extends Disposable {
 		private readonly _outputChannel: vscode.OutputChannel,
 	) {
 		super();
+
 		this._panel.iconPath = {
 			light: vscode.Uri.joinPath(
 				this._extensionUri,
@@ -131,6 +138,7 @@ export class BrowserPreview extends Disposable {
 		connection: Connection,
 	): Promise<void> {
 		await this._webviewComm.goToFile(file, true, connection);
+
 		this._panel.reveal(column);
 	}
 
@@ -147,6 +155,7 @@ export class BrowserPreview extends Disposable {
 
 			case "update-path": {
 				const msgJSON = JSON.parse(message.text);
+
 				this._webviewComm.handleNewPageLoad(
 					msgJSON.path.pathname,
 					this.currentConnection,
@@ -155,6 +164,7 @@ export class BrowserPreview extends Disposable {
 
 				return;
 			}
+
 			case "go-back":
 				await this._webviewComm.goBack();
 
@@ -175,10 +185,12 @@ export class BrowserPreview extends Disposable {
 
 				const connection =
 					this._connectionManager.getConnectionFromPort(msgJSON.port);
+
 				await this._webviewComm.setUrlBar(msgJSON.path, connection);
 
 				return;
 			}
+
 			case "refresh-back-forward-buttons":
 				this._webviewComm.updateForwardBackArrows();
 
@@ -191,10 +203,12 @@ export class BrowserPreview extends Disposable {
 
 			case "console": {
 				const msgJSON = JSON.parse(message.text);
+
 				this._handleConsole(msgJSON.type, msgJSON.data);
 
 				return;
 			}
+
 			case "devtools-open":
 				vscode.commands.executeCommand(
 					"workbench.action.webview.openDeveloperTools",
@@ -214,6 +228,7 @@ export class BrowserPreview extends Disposable {
 			this._outputChannel.clear();
 		} else {
 			const date = new Date();
+
 			this._outputChannel.appendLine(
 				`[${type} - ${FormatDateTime(date, " ")}] ${log}`,
 			);
@@ -222,6 +237,7 @@ export class BrowserPreview extends Disposable {
 
 	dispose(): void {
 		this._onDisposeEmitter.fire();
+
 		this._panel.dispose();
 
 		super.dispose();
@@ -238,6 +254,7 @@ export class BrowserPreview extends Disposable {
 		const uri = vscode.Uri.parse(givenURL.toString());
 
 		const previewType = SettingUtil.GetExternalPreviewType();
+
 		this._onShouldLaunchPreview.fire({
 			uri: uri,
 			options: {
@@ -291,6 +308,7 @@ export class BrowserPreview extends Disposable {
 			if (port === undefined) {
 				throw Error;
 			}
+
 			const connection = this._connectionManager.getConnectionFromPort(
 				parseInt(port),
 			);
@@ -306,7 +324,9 @@ export class BrowserPreview extends Disposable {
 			if (hostString.endsWith("/")) {
 				hostString = hostString.substring(0, hostString.length - 1);
 			}
+
 			const file = address.substring(hostString.length);
+
 			await this._webviewComm.goToFile(file, true, connection);
 		} catch (e) {
 			await this._handleOpenBrowser(address);

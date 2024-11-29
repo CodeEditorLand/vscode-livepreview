@@ -18,15 +18,19 @@ import { NavEditCommands, PageHistory } from "./pageHistoryTracker";
  */
 export class WebviewComm extends Disposable {
 	private readonly _pageHistory: PageHistory;
+
 	public currentAddress: string; // encoded address
 
 	private readonly _onPanelTitleChange = this._register(
 		new vscode.EventEmitter<{
 			title: string;
+
 			pathname: string;
+
 			connection: Connection;
 		}>(),
 	);
+
 	public readonly onPanelTitleChange = this._onPanelTitleChange.event;
 
 	constructor(
@@ -47,11 +51,14 @@ export class WebviewComm extends Disposable {
 		);
 
 		this._pageHistory = this._register(new PageHistory());
+
 		this.updateForwardBackArrows();
 
 		// Set the webview's html content
 		this.goToFile(initialFile, false);
+
 		this._pageHistory?.addHistory(initialFile, currentConnection);
+
 		this.currentAddress = initialFile;
 	}
 
@@ -93,6 +100,7 @@ export class WebviewComm extends Disposable {
 		if (!hostURI) {
 			hostURI = await this.resolveHost(connection);
 		}
+
 		return `${hostURI.toString()}${URLExt}`;
 	}
 
@@ -116,6 +124,7 @@ export class WebviewComm extends Disposable {
 			updateHistory,
 			connection,
 		);
+
 		this.currentAddress = URLExt;
 	}
 
@@ -138,6 +147,7 @@ export class WebviewComm extends Disposable {
 		const url = await this.constructAddress(URLExt, connection, httpHost);
 
 		const wsURI = await this._resolveWsHost(connection);
+
 		this._panel.webview.html = this._getHtmlForWebview(
 			webview,
 			url,
@@ -153,11 +163,13 @@ export class WebviewComm extends Disposable {
 				pathname: URLExt,
 				connection: connection,
 			});
+
 			this._panel.webview.postMessage({
 				command: "set-url",
 				text: JSON.stringify({ fullPath: url, pathname: URLExt }),
 			});
 		}
+
 		if (updateHistory) {
 			this.handleNewPageLoad(URLExt, connection);
 		}
@@ -240,10 +252,15 @@ export class WebviewComm extends Disposable {
 				-->
 				<meta http-equiv="Content-Security-Policy" content="
 					default-src 'none';
+
 					connect-src ${wsServerAddr};
+
 					font-src ${this._panel.webview.cspSource};
+
 					style-src ${this._panel.webview.cspSource};
+
 					script-src 'nonce-${nonce}';
+
 					frame-src ${httpServerAddr};
 				">
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -414,6 +431,7 @@ export class WebviewComm extends Disposable {
 			pathname,
 			connection,
 		});
+
 		this.currentAddress = pathname;
 
 		const response = this._pageHistory?.addHistory(pathname, connection);

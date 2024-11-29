@@ -104,6 +104,7 @@ export class WSServer extends Disposable {
 	 */
 	public start(wsPort: number): Promise<void> {
 		this._connection.wsPort = wsPort;
+
 		this._connection.wsPath = `/${randomBytes(20).toString("hex")}`;
 
 		return this._startWSServer(this._basePath ?? "");
@@ -138,6 +139,7 @@ export class WSServer extends Disposable {
 			const _handleWSError = (err: any): void => {
 				if (err.code == "EADDRINUSE") {
 					this._connection.wsPort++;
+
 					this._wss = new WSServerWithOriginCheck({
 						port: this._connection.wsPort,
 						host: this._connection.host,
@@ -145,6 +147,7 @@ export class WSServer extends Disposable {
 					});
 				} else if (err.code == "EADDRNOTAVAIL") {
 					this._connection.resetHostToDefault();
+
 					this._wss = new WSServerWithOriginCheck({
 						port: this._connection.wsPort,
 						host: this._connection.host,
@@ -161,7 +164,9 @@ export class WSServer extends Disposable {
 						type: "ws",
 						err: err,
 					});
+
 					console.log(`Unknown error: ${err}`);
+
 					reject();
 				}
 			};
@@ -175,11 +180,14 @@ export class WSServer extends Disposable {
 			this._wss.on("connection", (ws: WebSocket) =>
 				this._handleWSConnection(basePath, ws),
 			);
+
 			this._wss.on("error", (err: Error) => _handleWSError(err));
+
 			this._wss.on("listening", () => {
 				console.log(
 					`Websocket server is running on port ${this._connection.wsPort}`,
 				);
+
 				resolve();
 			});
 		});
@@ -215,6 +223,7 @@ export class WSServer extends Disposable {
 							path: results.pathname,
 							port: results.port,
 						};
+
 						ws.send(JSON.stringify(sendData));
 					}
 				}

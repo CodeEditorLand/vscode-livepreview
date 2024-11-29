@@ -29,16 +29,20 @@ export class serverTaskLinkProvider
 	private readonly _onRequestOpenEditorToSide = this._register(
 		new vscode.EventEmitter<vscode.Uri>(),
 	);
+
 	public readonly onRequestOpenEditorToSide =
 		this._onRequestOpenEditorToSide.event;
 
 	private readonly _onShouldLaunchPreview = this._register(
 		new vscode.EventEmitter<{
 			uri?: vscode.Uri;
+
 			options?: IOpenFileOptions;
+
 			previewType?: string;
 		}>(),
 	);
+
 	public readonly onShouldLaunchPreview = this._onShouldLaunchPreview.event;
 
 	constructor(
@@ -47,6 +51,7 @@ export class serverTaskLinkProvider
 		private readonly _connectionManager: ConnectionManager,
 	) {
 		super();
+
 		vscode.window.registerTerminalLinkProvider(this);
 	}
 
@@ -84,6 +89,7 @@ export class serverTaskLinkProvider
 			await this._openRelativeLinkInWorkspace(link.data, link.isDir);
 		} else {
 			const uri = vscode.Uri.parse(link.data);
+
 			this._onShouldLaunchPreview.fire({ uri });
 		}
 	}
@@ -144,6 +150,7 @@ export class serverTaskLinkProvider
 							inEditor: true,
 							isDir: isDir,
 						};
+
 						links.push(tl);
 					}
 				}
@@ -192,6 +199,7 @@ export class serverTaskLinkProvider
 							data: vscode.Uri.joinPath(hostUri, url.pathname),
 							inEditor: false,
 						};
+
 						links.push(tl);
 					}
 				}

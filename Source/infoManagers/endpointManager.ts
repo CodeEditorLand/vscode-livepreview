@@ -35,6 +35,7 @@ export class EndpointManager extends Disposable {
 			) {
 				this.encodeLooseFileEndpoint(workspaceDocuments[i].fileName);
 			}
+
 			i++;
 		}
 	}
@@ -49,6 +50,7 @@ export class EndpointManager extends Disposable {
 		const child = await PathUtil.GetFileName(location, true);
 
 		fullParent = PathUtil.ConvertToPosixPath(fullParent);
+
 		this.validEndpointRoots.add(fullParent);
 
 		let endpoint_prefix = `/endpoint_unsaved`;
@@ -85,6 +87,7 @@ export class EndpointManager extends Disposable {
 				return actualPath;
 			}
 		}
+
 		return undefined;
 	}
 
@@ -101,6 +104,7 @@ export class EndpointManager extends Disposable {
 				}
 			}
 		}
+
 		return undefined;
 	}
 

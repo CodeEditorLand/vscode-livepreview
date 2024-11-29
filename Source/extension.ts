@@ -22,6 +22,7 @@ let serverPreview: Manager;
 
 export function activate(context: vscode.ExtensionContext): void {
 	const extPackageJSON = context.extension.packageJSON;
+
 	reporter = new TelemetryReporter(
 		EXTENSION_ID,
 		extPackageJSON.version,
@@ -64,6 +65,7 @@ export function activate(context: vscode.ExtensionContext): void {
 			`${SETTINGS_SECTION_ID}.start.preview.atFileString`,
 			async (filePath?: string) => {
 				filePath = filePath ?? "/";
+
 				await serverPreview.openPreviewAtFileString(filePath);
 			},
 		),
@@ -107,6 +109,7 @@ export function activate(context: vscode.ExtensionContext): void {
 					location: "atFile",
 					debug: "false",
 				});
+
 				await serverPreview.openPreviewAtFileUri(
 					file,
 					options,
@@ -130,6 +133,7 @@ export function activate(context: vscode.ExtensionContext): void {
 					type: "internal",
 					location: "atFile",
 				});
+
 				await serverPreview.openPreviewAtFileUri(
 					file,
 					options,
@@ -154,6 +158,7 @@ export function activate(context: vscode.ExtensionContext): void {
 					location: "atFile",
 					debug: "true",
 				});
+
 				await serverPreview.openPreviewAtFileUri(
 					file,
 					options,
@@ -178,6 +183,7 @@ export function activate(context: vscode.ExtensionContext): void {
 				"server.forceClose" : {}
 			*/
 			reporter.sendTelemetryEvent("server.forceClose");
+
 			serverPreview.forceCloseServers();
 		}),
 	);
@@ -203,6 +209,7 @@ export function activate(context: vscode.ExtensionContext): void {
 				const relativeFileStr = file.fsPath.substring(
 					workspace.uri.fsPath.length,
 				);
+
 				await SettingUtil.UpdateSettings(
 					Settings.defaultPreviewPath,
 					PathUtil.ConvertToPosixPath(relativeFileStr),
@@ -216,5 +223,6 @@ export function activate(context: vscode.ExtensionContext): void {
 
 export function deactivate(): void {
 	serverPreview.closePanel();
+
 	serverPreview.dispose();
 }

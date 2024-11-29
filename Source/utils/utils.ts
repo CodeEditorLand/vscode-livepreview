@@ -42,8 +42,10 @@ export function FormatFileSize(bytes: number): string {
 
 			return `${modifiedSize} ${sizeUnits[i]}`;
 		}
+
 		i++;
 	}
+
 	const modifiedSize = (bytes / Math.pow(1024, i)).toFixed(1);
 
 	return `${modifiedSize} TB`;
@@ -58,6 +60,7 @@ export function isFileInjectable(file: string | undefined): boolean {
 	if (!file) {
 		return false;
 	}
+
 	const fileEndingRegex = /\.([^/.]+)$/; // regex for seeing if there is a file ending
 	const hasFileEnding = fileEndingRegex.test(file);
 

@@ -27,7 +27,9 @@ import { HTMLInjector } from "./HTMLInjector";
  */
 interface IRespInfo {
 	ContentType: string | undefined;
+
 	ContentLength: number | undefined;
+
 	Stream: Stream.Readable | fs.ReadStream | undefined;
 }
 
@@ -36,8 +38,11 @@ interface IRespInfo {
  */
 interface IIndexFileEntry {
 	LinkSrc: string;
+
 	LinkName: string;
+
 	FileSize: string;
+
 	DateTime: string;
 }
 
@@ -46,7 +51,9 @@ interface IIndexFileEntry {
  */
 interface IIndexDirEntry {
 	LinkSrc: string;
+
 	LinkName: string;
+
 	DateTime: string;
 }
 
@@ -55,7 +62,9 @@ interface IIndexDirEntry {
  */
 export class ContentLoader extends Disposable {
 	private _scriptInjector: HTMLInjector | undefined;
+
 	private _servedFiles: Set<string> = new Set<string>();
+
 	private _insertionTags = ["head", "body", "html", "!DOCTYPE"];
 
 	constructor(
@@ -65,6 +74,7 @@ export class ContentLoader extends Disposable {
 		readonly _connection: Connection,
 	) {
 		super();
+
 		this._scriptInjector = new HTMLInjector(_extensionUri, _connection);
 	}
 
@@ -215,6 +225,7 @@ export class ContentLoader extends Disposable {
 			if (!fileStats) {
 				continue;
 			}
+
 			const modifiedDateTimeString = FormatDateTime(fileStats.mtime);
 
 			if (fileStats.isDirectory()) {
@@ -225,6 +236,7 @@ export class ContentLoader extends Disposable {
 				});
 			} else {
 				const fileSize = FormatFileSize(fileStats.size);
+
 				fileEntries.push({
 					LinkSrc: relativeFileWithChild,
 					LinkName: childFile,
@@ -322,19 +334,24 @@ export class ContentLoader extends Disposable {
 				if (inFilesystem && workspaceDocuments[i].isUntitled) {
 					continue;
 				}
+
 				let fileContents = workspaceDocuments[i].getText();
 
 				if (workspaceDocuments[i].languageId == "html") {
 					fileContents = this._injectIntoFile(fileContents);
+
 					contentType = "text/html";
 				}
 
 				const fileContentsBuffer = Buffer.from(fileContents);
+
 				stream = Stream.Readable.from(fileContentsBuffer);
+
 				contentLength = fileContentsBuffer.length;
 
 				break;
 			}
+
 			i++;
 		}
 
@@ -348,10 +365,13 @@ export class ContentLoader extends Disposable {
 
 				const injectedFileContentsBuffer =
 					Buffer.from(injectedFileContents);
+
 				stream = Stream.Readable.from(injectedFileContentsBuffer);
+
 				contentLength = injectedFileContentsBuffer.length;
 			} else {
 				stream = fs.createReadStream(readPath);
+
 				contentLength = fs.statSync(readPath).size;
 			}
 		}
@@ -389,6 +409,7 @@ export class ContentLoader extends Disposable {
 
 		for (const tag of this._insertionTags) {
 			re = new RegExp(`<${tag}[^>]*>`, "g");
+
 			re.test(contents);
 
 			tagEnd = re.lastIndex;

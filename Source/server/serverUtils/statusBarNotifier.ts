@@ -14,20 +14,27 @@ import { Disposable } from "../../utils/dispose";
  */
 export class StatusBarNotifier extends Disposable {
 	private _statusBar: vscode.StatusBarItem;
+
 	private _on: boolean;
+
 	private _ports: Map<string | undefined, number>;
 
 	constructor() {
 		super();
+
 		this._statusBar = this._register(
 			vscode.window.createStatusBarItem(
 				vscode.StatusBarAlignment.Right,
 				100,
 			),
 		);
+
 		this._statusBar.name = vscode.l10n.t("Live Preview Ports");
+
 		this.serverOff();
+
 		this._on = false;
+
 		this._ports = new Map<string, number>();
 	}
 
@@ -36,8 +43,11 @@ export class StatusBarNotifier extends Disposable {
 	 */
 	public setServer(uri: vscode.Uri | undefined, port: number): void {
 		this._on = true;
+
 		this._statusBar.show();
+
 		this._ports.set(uri?.toString(), port);
+
 		this._refreshBar();
 	}
 
@@ -48,6 +58,7 @@ export class StatusBarNotifier extends Disposable {
 
 		if (this._ports.size === 1) {
 			const port = this._ports.values().next().value;
+
 			portsLabel = vscode.l10n.t("Port: {0}", port);
 		} else {
 			if (this._ports.size === 2) {
@@ -69,6 +80,7 @@ export class StatusBarNotifier extends Disposable {
 							vscode.Uri.parse(uriString),
 						)
 					: undefined;
+
 				bulletPoints.push(
 					`\n\t• ${port} (${
 						workspace
@@ -89,7 +101,9 @@ export class StatusBarNotifier extends Disposable {
 		portsTooltip += bulletPoints.join("");
 
 		this._statusBar.tooltip = portsTooltip;
+
 		this._statusBar.text = `$(radio-tower) ${portsLabel}`;
+
 		this._statusBar.command = {
 			title: vscode.l10n.t("Open Command Palette"),
 			command: "workbench.action.quickOpen",
@@ -102,6 +116,7 @@ export class StatusBarNotifier extends Disposable {
 	 */
 	public serverOff(): void {
 		this._on = false;
+
 		this._statusBar.hide();
 	}
 

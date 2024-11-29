@@ -36,9 +36,13 @@ export class ServerTaskProvider
 	implements vscode.TaskProvider
 {
 	public static CustomBuildScriptType = "Live Preview";
+
 	private _tasks: vscode.Task[] | undefined;
+
 	private _terminals: Map<string | undefined, ServerTaskTerminal>;
+
 	private _terminalLinkProvider: serverTaskLinkProvider;
+
 	private _runTaskWithExternalPreview;
 
 	// emitters to allow manager to communicate with the terminal.
@@ -66,10 +70,13 @@ export class ServerTaskProvider
 	private readonly _onShouldLaunchPreview = this._register(
 		new vscode.EventEmitter<{
 			uri?: vscode.Uri;
+
 			options?: IOpenFileOptions;
+
 			previewType?: string;
 		}>(),
 	);
+
 	public readonly onShouldLaunchPreview = this._onShouldLaunchPreview.event;
 
 	constructor(
@@ -80,6 +87,7 @@ export class ServerTaskProvider
 		super();
 
 		this._terminals = new Map<string, ServerTaskTerminal>();
+
 		this._terminalLinkProvider = this._register(
 			new serverTaskLinkProvider(
 				_reporter,
@@ -93,6 +101,7 @@ export class ServerTaskProvider
 				this._onShouldLaunchPreview.fire(e),
 			),
 		);
+
 		this._terminalLinkProvider.onRequestOpenEditorToSide((e) => {
 			this._onRequestOpenEditorToSide.fire(e);
 		});
@@ -221,6 +230,7 @@ export class ServerTaskProvider
 		} catch (e) {
 			// no op
 		}
+
 		return this._getTask(definition, workspace);
 	}
 
@@ -259,6 +269,7 @@ export class ServerTaskProvider
 				),
 			);
 		}
+
 		return this._tasks;
 	}
 
@@ -308,6 +319,7 @@ export class ServerTaskProvider
 
 				newTerm.onRequestToCloseServer((e) => {
 					this._onRequestToCloseServerEmitter.fire(e);
+
 					this._terminals.delete(workspace?.uri.toString());
 				});
 
@@ -324,6 +336,7 @@ export class ServerTaskProvider
 			ServerTaskProvider.CustomBuildScriptType,
 			custExec,
 		);
+
 		task.isBackground = true;
 
 		// currently, re-using a terminal will cause the link provider to fail

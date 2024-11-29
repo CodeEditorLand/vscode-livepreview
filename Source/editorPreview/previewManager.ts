@@ -30,18 +30,25 @@ import { BrowserPreview } from "./browserPreview";
  */
 export class PreviewManager extends Disposable {
 	private readonly _outputChannel: vscode.OutputChannel;
+
 	public previewActive = false;
+
 	public currentPanel: BrowserPreview | undefined;
+
 	private _notifiedAboutLooseFiles = false;
+
 	private _currentTimeout: NodeJS.Timeout | undefined;
 
 	private readonly _onShouldLaunchPreview = this._register(
 		new vscode.EventEmitter<{
 			uri?: vscode.Uri;
+
 			options?: IOpenFileOptions;
+
 			previewType?: string;
 		}>(),
 	);
+
 	public readonly onShouldLaunchPreview = this._onShouldLaunchPreview.event;
 
 	constructor(
@@ -52,6 +59,7 @@ export class PreviewManager extends Disposable {
 		private readonly _serverExpired: () => void,
 	) {
 		super();
+
 		this._outputChannel =
 			vscode.window.createOutputChannel(OUTPUT_CHANNEL_NAME);
 	}
@@ -178,6 +186,7 @@ export class PreviewManager extends Disposable {
 					}
 				});
 		}
+
 		this._notifiedAboutLooseFiles = true;
 	}
 
@@ -195,6 +204,7 @@ export class PreviewManager extends Disposable {
 
 		if (!connection?.workspace) {
 			this._notifyLooseFileOpen();
+
 			path = await this._endpointManager.encodeLooseFileEndpoint(
 				file.fsPath,
 			);
@@ -205,6 +215,7 @@ export class PreviewManager extends Disposable {
 		} else if (connection) {
 			path = connection.getFileRelativeToWorkspace(file.fsPath) ?? "";
 		}
+
 		return path;
 	}
 
@@ -261,6 +272,7 @@ export class PreviewManager extends Disposable {
 						Math.floor(closeServerDelay * 1000 * 60),
 					);
 				}
+
 				listener.dispose();
 			}),
 		);

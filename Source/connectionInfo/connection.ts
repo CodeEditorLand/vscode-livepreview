@@ -15,9 +15,13 @@ import { SETTINGS_SECTION_ID } from "../utils/settingsUtil";
  */
 export interface ConnectionInfo {
 	httpURI: vscode.Uri;
+
 	wsURI: vscode.Uri;
+
 	workspace: vscode.WorkspaceFolder | undefined;
+
 	rootPrefix: string | undefined;
+
 	httpPort: number;
 }
 
@@ -29,17 +33,21 @@ export interface ConnectionInfo {
  */
 export class Connection extends Disposable {
 	public httpServerBase: string | undefined;
+
 	public wsServerBase: string | undefined;
+
 	public wsPath = "";
 
 	private readonly _onConnected = this._register(
 		new vscode.EventEmitter<ConnectionInfo>(),
 	);
+
 	public readonly onConnected = this._onConnected.event;
 
 	private readonly _onShouldResetInitHost = this._register(
 		new vscode.EventEmitter<string>(),
 	);
+
 	public readonly onShouldResetInitHost = this._onShouldResetInitHost.event;
 
 	constructor(
@@ -79,6 +87,7 @@ export class Connection extends Disposable {
 			this.wsPort,
 			this.wsPath,
 		);
+
 		this._onConnected.fire({
 			httpURI: externalHTTPUri,
 			wsURI: externalWSUri,
@@ -98,6 +107,7 @@ export class Connection extends Disposable {
 		if (!httpPort) {
 			httpPort = this.httpPort;
 		}
+
 		const httpPortUri = this.constructLocalUri(httpPort);
 
 		return vscode.env.asExternalUri(httpPortUri);
@@ -118,6 +128,7 @@ export class Connection extends Disposable {
 		if (!wsPath) {
 			wsPath = this.wsPath;
 		}
+
 		const wsPortUri = this.constructLocalUri(wsPort);
 
 		return vscode.Uri.joinPath(
@@ -143,6 +154,7 @@ export class Connection extends Disposable {
 		if (this.workspace) {
 			return vscode.Uri.joinPath(this.workspace.uri, this._rootPrefix);
 		}
+
 		return undefined;
 	}
 
@@ -162,7 +174,9 @@ export class Connection extends Disposable {
 					DEFAULT_HOST,
 				),
 			);
+
 			this.host = DEFAULT_HOST;
+
 			this._onShouldResetInitHost.fire(this.host);
 		}
 	}

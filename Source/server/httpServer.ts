@@ -24,12 +24,15 @@ export class HttpServer extends Disposable {
 		typeof http.IncomingMessage,
 		typeof http.ServerResponse
 	>;
+
 	private _contentLoader: ContentLoader;
+
 	private _defaultHeaders: any; // headers will be validated when set on the reponse
 
 	private readonly _onNewReqProcessed = this._register(
 		new vscode.EventEmitter<IServerMsg>(),
 	);
+
 	public readonly onNewReqProcessed = this._onNewReqProcessed.event;
 
 	constructor(
@@ -39,6 +42,7 @@ export class HttpServer extends Disposable {
 		private readonly _connection: Connection,
 	) {
 		super();
+
 		this._contentLoader = this._register(
 			new ContentLoader(
 				_extensionUri,
@@ -47,6 +51,7 @@ export class HttpServer extends Disposable {
 				_connection,
 			),
 		);
+
 		this._defaultHeaders = SettingUtil.GetConfig().httpHeaders;
 
 		this._register(
@@ -75,6 +80,7 @@ export class HttpServer extends Disposable {
 	 */
 	public start(port: number): Promise<void> {
 		this._connection.httpPort = port;
+
 		this._contentLoader.resetServedFiles();
 
 		return this._startHttpServer();
@@ -99,18 +105,21 @@ export class HttpServer extends Disposable {
 				console.log(
 					`Server is running on port ${this._connection.httpPort}`,
 				);
+
 				resolve();
 			});
 
 			this._server?.on("error", (err: any) => {
 				if (err.code == "EADDRINUSE") {
 					this._connection.httpPort++;
+
 					this._server?.listen(
 						this._connection.httpPort,
 						this._connection.host,
 					);
 				} else if (err.code == "EADDRNOTAVAIL") {
 					this._connection.resetHostToDefault();
+
 					this._server?.listen(
 						this._connection.httpPort,
 						this._connection.host,
@@ -126,7 +135,9 @@ export class HttpServer extends Disposable {
 						type: "http",
 						err: err,
 					});
+
 					console.log(`Unknown error: ${err}`);
+
 					reject();
 				}
 			});
@@ -178,7 +189,9 @@ export class HttpServer extends Disposable {
 		const reportAndReturn = (status: number): void => {
 			// write the status to the header, send data for logging, then end.
 			writeHeader(status);
+
 			this._reportStatus(req, res);
+
 			res.end();
 		};
 
@@ -212,9 +225,13 @@ export class HttpServer extends Disposable {
 			const respInfo = this._contentLoader.loadInjectedJS();
 
 			const contentType = respInfo.ContentType ?? "";
+
 			contentLength = respInfo.ContentLength;
+
 			writeHeader(200, contentType, contentLength);
+
 			stream = respInfo.Stream;
+
 			stream?.pipe(res);
 
 			return;
@@ -232,9 +249,13 @@ export class HttpServer extends Disposable {
 			const respInfo = noServerRoot
 				? this._contentLoader.createNoRootServer()
 				: this._contentLoader.createPageDoesNotExist(absoluteReadPath);
+
 			writeHeader(404, respInfo.ContentType, respInfo.ContentLength);
+
 			this._reportStatus(req, res);
+
 			stream = respInfo.Stream;
+
 			stream?.pipe(res);
 		};
 
@@ -245,6 +266,7 @@ export class HttpServer extends Disposable {
 		}
 
 		let looseFile = false;
+
 		URLPathName = decodeURI(URLPathName);
 
 		let absoluteReadPath = path.join(basePath, URLPathName);
@@ -264,9 +286,13 @@ export class HttpServer extends Disposable {
 
 				if (content.Stream) {
 					stream = content.Stream;
+
 					contentType = content.ContentType ?? "";
+
 					contentLength = content.ContentLength;
+
 					writeHeader(200, contentType, content.ContentLength);
+
 					stream.pipe(res);
 
 					return;
@@ -277,6 +303,7 @@ export class HttpServer extends Disposable {
 				await this._endpointManager.decodeLooseFileEndpoint(
 					URLPathName,
 				);
+
 			looseFile = true;
 
 			if (
@@ -306,17 +333,21 @@ export class HttpServer extends Disposable {
 
 			return;
 		}
+
 		if (
 			absPathExistsStatInfo.stat &&
 			absPathExistsStatInfo.stat.isDirectory()
 		) {
 			if (!URLPathName.endsWith("/")) {
 				const queries = urlObj.query;
+
 				URLPathName = encodeURI(URLPathName);
+
 				res.setHeader(
 					"Location",
 					`${URLPathName}/${queries.length > 0 ? `?${queries}` : ""}`,
 				);
+
 				reportAndReturn(302); // redirect
 				return;
 			}
@@ -333,8 +364,11 @@ export class HttpServer extends Disposable {
 
 				const respInfo =
 					await this._contentLoader.getFileStream(absoluteReadPath);
+
 				stream = respInfo.Stream;
+
 				contentType = respInfo.ContentType ?? "";
+
 				contentLength = respInfo.ContentLength;
 			} else {
 				// create a default index page
@@ -345,15 +379,21 @@ export class HttpServer extends Disposable {
 						? PathUtil.GetEndpointParent(URLPathName)
 						: undefined,
 				);
+
 				stream = respInfo.Stream;
+
 				contentType = respInfo.ContentType ?? "";
+
 				contentLength = respInfo.ContentLength;
 			}
 		} else {
 			const respInfo =
 				await this._contentLoader.getFileStream(absoluteReadPath);
+
 			stream = respInfo.Stream;
+
 			contentType = respInfo.ContentType ?? "";
+
 			contentLength = respInfo.ContentLength;
 		}
 
@@ -363,7 +403,9 @@ export class HttpServer extends Disposable {
 
 				return;
 			});
+
 			writeHeader(200, contentType, contentLength);
+
 			stream.pipe(res);
 		} else {
 			reportAndReturn(500);

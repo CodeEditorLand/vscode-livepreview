@@ -32,20 +32,24 @@ export class ServerTaskTerminal
 	private readonly _onRequestToOpenServerEmitter = this._register(
 		new vscode.EventEmitter<vscode.WorkspaceFolder | undefined>(),
 	);
+
 	public readonly onRequestToOpenServer =
 		this._onRequestToOpenServerEmitter.event;
 
 	private readonly _onRequestToCloseServerEmitter = this._register(
 		new vscode.EventEmitter<vscode.WorkspaceFolder | undefined>(),
 	);
+
 	public readonly onRequestToCloseServer =
 		this._onRequestToCloseServerEmitter.event;
 
 	// `writeEmitter` and `closeEmitter` are inherited from the pseudoterminal.
 	private _onDidWrite = new vscode.EventEmitter<string>();
+
 	onDidWrite: vscode.Event<string> = this._onDidWrite.event;
 
 	public _onDidClose = new vscode.EventEmitter<number>();
+
 	onDidClose?: vscode.Event<number> = this._onDidClose.event;
 
 	constructor(
@@ -67,7 +71,9 @@ export class ServerTaskTerminal
 		// At this point we can start using the terminal.
 		if (this._executeServer) {
 			this.running = true;
+
 			this._onDidWrite.fire(vscode.l10n.t("Opening Server...") + "\r\n");
+
 			this._onRequestToOpenServerEmitter.fire(this._workspace);
 		} else {
 			this._onDidWrite.fire(
@@ -76,6 +82,7 @@ export class ServerTaskTerminal
 					"Server already running in another task. Closing now.",
 				) + "\r\n",
 			);
+
 			this.close();
 		}
 	}
@@ -85,6 +92,7 @@ export class ServerTaskTerminal
 
 		if (this._executeServer) {
 			this._onRequestToCloseServerEmitter.fire(this._workspace);
+
 			this._onDidClose.fire(0);
 		} else {
 			this._onDidClose.fire(1);
@@ -123,6 +131,7 @@ export class ServerTaskTerminal
 
 				break;
 			}
+
 			case ServerStartedStatus.STARTED_BY_EMBEDDED_PREV: {
 				this._onDidWrite.fire(
 					vscode.l10n.t(
@@ -134,6 +143,7 @@ export class ServerTaskTerminal
 				break;
 			}
 		}
+
 		this._onDidWrite.fire(
 			vscode.l10n.t(
 				"Type {0} to close the server.",
@@ -151,6 +161,7 @@ export class ServerTaskTerminal
 	 */
 	public serverStopped(): void {
 		this._onDidWrite.fire(vscode.l10n.t("Server stopped. Bye!") + "\n");
+
 		this.close();
 	}
 
@@ -163,6 +174,7 @@ export class ServerTaskTerminal
 				`This task will finish now, but the server will stay on since you've used the embedded preview recently.`,
 			) + "\r\n",
 		);
+
 		this._onDidWrite.fire(
 			TerminalStyleUtil.ColorTerminalString(
 				vscode.l10n.t(
@@ -171,6 +183,7 @@ export class ServerTaskTerminal
 				TerminalColor.yellow,
 			),
 		);
+
 		this.close();
 	}
 
@@ -202,6 +215,7 @@ export class ServerTaskTerminal
 		} else if (status >= 300) {
 			color = TerminalColor.yellow;
 		}
+
 		return TerminalStyleUtil.ColorTerminalString(status.toString(), color);
 	}
 

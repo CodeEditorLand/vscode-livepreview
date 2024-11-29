@@ -17,8 +17,11 @@ import { Connection, ConnectionInfo } from "./connection";
  */
 export class ConnectionManager extends Disposable {
 	private _initHttpPort: number;
+
 	private _initWSPort: number;
+
 	private _initHost: string;
+
 	private _connections: Map<string | undefined, Connection>; // undefined key means no workspace root
 
 	private readonly _onConnected = this._register(
@@ -34,11 +37,14 @@ export class ConnectionManager extends Disposable {
 		super();
 
 		this._initHttpPort = SettingUtil.GetConfig().portNumber;
+
 		this._initWSPort = this._initHttpPort + 1;
+
 		this._initHost = SettingUtil.GetConfig().hostIP;
 
 		if (!this._validHost(this._initHost)) {
 			this._showIncorrectHostFormatError(this._initHost);
+
 			this._initHost = DEFAULT_HOST;
 		} else if (vscode.env.remoteName && this._initHost != DEFAULT_HOST) {
 			vscode.window.showErrorMessage(
@@ -48,6 +54,7 @@ export class ConnectionManager extends Disposable {
 					DEFAULT_HOST,
 				),
 			);
+
 			this._initHost = DEFAULT_HOST;
 		}
 
@@ -57,6 +64,7 @@ export class ConnectionManager extends Disposable {
 			vscode.workspace.onDidChangeConfiguration((e) => {
 				if (e.affectsConfiguration(SETTINGS_SECTION_ID)) {
 					this._pendingPort = SettingUtil.GetConfig().portNumber;
+
 					this._pendingHost = SettingUtil.GetConfig().hostIP;
 				}
 			}),
@@ -108,9 +116,11 @@ export class ConnectionManager extends Disposable {
 		this._register(
 			connection.onConnected((e) => this._onConnected.fire(e)),
 		);
+
 		this._register(
 			connection.onShouldResetInitHost((host) => (this._initHost = host)),
 		);
+
 		this._connections.set(workspaceFolder?.uri.toString(), connection);
 
 		return connection;
@@ -124,6 +134,7 @@ export class ConnectionManager extends Disposable {
 		workspaceFolder: vscode.WorkspaceFolder | undefined,
 	): void {
 		this._connections.get(workspaceFolder?.uri.toString())?.dispose;
+
 		this._connections.delete(workspaceFolder?.uri.toString());
 	}
 
@@ -139,6 +150,7 @@ export class ConnectionManager extends Disposable {
 	 */
 	private set _pendingPort(port: number) {
 		this._initHttpPort = port;
+
 		this._initWSPort = port + 1;
 	}
 
@@ -147,6 +159,7 @@ export class ConnectionManager extends Disposable {
 			this._initHost = host;
 		} else {
 			this._showIncorrectHostFormatError(host);
+
 			this._initHost = DEFAULT_HOST;
 		}
 	}

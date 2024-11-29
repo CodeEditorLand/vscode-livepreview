@@ -19,6 +19,7 @@ import { Disposable } from "../../utils/dispose";
  */
 interface IReplaceObj {
 	original: string;
+
 	replacement: string;
 }
 
@@ -28,6 +29,7 @@ interface IReplaceObj {
  */
 export class HTMLInjector extends Disposable {
 	private _script: string | undefined;
+
 	public rawScript: string;
 
 	constructor(
@@ -44,6 +46,7 @@ export class HTMLInjector extends Disposable {
 		// Reading the file synchronously since the rawScript string must exist for the
 		// object to function correctly.
 		this.rawScript = fs.readFileSync(scriptPath, "utf8").toString();
+
 		this._initScript(this.rawScript, undefined, undefined);
 
 		this._register(
@@ -73,6 +76,7 @@ export class HTMLInjector extends Disposable {
 		if (!httpUri) {
 			httpUri = await this._connection.resolveExternalHTTPUri();
 		}
+
 		if (!wsUri) {
 			wsUri = await this._connection.resolveExternalWSUri();
 		}
@@ -87,10 +91,12 @@ export class HTMLInjector extends Disposable {
 		if (httpURL.endsWith("/")) {
 			httpURL = httpURL.substring(httpURL.length - 1);
 		}
+
 		const replacements = [
 			{ original: WS_URL_PLACEHOLDER, replacement: wsURL },
 			{ original: HTTP_URL_PLACEHOLDER, replacement: httpURL },
 		];
+
 		this._script = this._replace(fileString, replacements);
 	}
 
@@ -102,6 +108,7 @@ export class HTMLInjector extends Disposable {
 	private _replace(script: string, replaces: IReplaceObj[]): string {
 		replaces.forEach((replace) => {
 			const placeHolderIndex = script.indexOf(replace.original);
+
 			script =
 				script.substring(0, placeHolderIndex) +
 				replace.replacement +

@@ -63,6 +63,7 @@ export class PathUtil {
 		) {
 			return file;
 		}
+
 		return path.dirname(file);
 	}
 
@@ -86,6 +87,7 @@ export class PathUtil {
 				return "";
 			}
 		}
+
 		return path.basename(file);
 	}
 
@@ -128,6 +130,7 @@ export class PathUtil {
 		if (!workspaceFolder) {
 			return undefined;
 		}
+
 		return file.fsPath.substring(workspaceFolder.uri.fsPath.length);
 	}
 
@@ -142,6 +145,7 @@ export class PathUtil {
 		if (!file) {
 			return file;
 		}
+
 		file = PathUtil.ConvertToPosixPath(file);
 
 		const parts = file.split("/");
@@ -152,6 +156,7 @@ export class PathUtil {
 			if (part.length > 0) {
 				newParts.push(part);
 			}
+
 			if (part == "User") {
 				break;
 			}
@@ -245,6 +250,7 @@ export class PathUtil {
 		if (idx === -1) {
 			return undefined;
 		}
+
 		return workspaces[idx];
 	}
 
@@ -302,11 +308,13 @@ export class PathUtil {
 		let endpoint: string | undefined = urlPath.endsWith("/")
 			? urlPath.substring(0, urlPath.length - 1)
 			: urlPath;
+
 		endpoint = endpoint.split("/").pop();
 
 		if (!endpoint) {
 			return ".";
 		}
+
 		return decodeURI(endpoint);
 	}
 }

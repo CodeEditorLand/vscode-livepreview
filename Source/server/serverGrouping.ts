@@ -24,7 +24,9 @@ import { WSServer } from "./wsServer";
  */
 export interface IServerMsg {
 	method: string;
+
 	url: string;
+
 	status: number;
 }
 
@@ -33,28 +35,39 @@ export interface IServerMsg {
  */
 export interface ILaunchInfo {
 	external: boolean;
+
 	uri?: vscode.Uri;
+
 	debug: boolean;
+
 	panel?: vscode.WebviewPanel;
+
 	connection: Connection;
 }
 
 interface IExternalPreviewArgs {
 	uri?: vscode.Uri;
+
 	debug: boolean;
+
 	connection: Connection;
 }
 
 interface IEmbeddedPreviewArgs {
 	uri?: vscode.Uri;
+
 	panel: vscode.WebviewPanel | undefined;
+
 	connection: Connection;
 }
 
 export class ServerGrouping extends Disposable {
 	private _pendingLaunchInfo: ILaunchInfo | undefined;
+
 	private readonly _httpServer: HttpServer;
+
 	private readonly _wsServer: WSServer;
+
 	private _isServerOn = false;
 
 	// on each new request processed by the HTTP server, we should
@@ -62,20 +75,24 @@ export class ServerGrouping extends Disposable {
 	private readonly _onNewReqProcessed = this._register(
 		new vscode.EventEmitter<IServerMsg>(),
 	);
+
 	public readonly onNewReqProcessed = this._onNewReqProcessed.event;
 
 	private readonly _onClose = this._register(new vscode.EventEmitter<void>());
+
 	public readonly onClose = this._onClose.event;
 
 	private readonly _onShouldLaunchExternalPreview = this._register(
 		new vscode.EventEmitter<IExternalPreviewArgs>(),
 	);
+
 	public readonly onShouldLaunchExternalPreview =
 		this._onShouldLaunchExternalPreview.event;
 
 	private readonly _onShouldLaunchEmbeddedPreview = this._register(
 		new vscode.EventEmitter<IEmbeddedPreviewArgs>(),
 	);
+
 	public readonly onShouldLaunchEmbeddedPreview =
 		this._onShouldLaunchEmbeddedPreview.event;
 
@@ -88,6 +105,7 @@ export class ServerGrouping extends Disposable {
 		private readonly _pendingServerWorkspaces: Set<string | undefined>,
 	) {
 		super();
+
 		this._httpServer = this._register(
 			new HttpServer(
 				_extensionUri,
@@ -107,6 +125,7 @@ export class ServerGrouping extends Disposable {
 					e,
 					this._connection.workspace,
 				);
+
 				this._onNewReqProcessed.fire(e);
 			}),
 		);
@@ -166,7 +185,9 @@ export class ServerGrouping extends Disposable {
 	public closeServer(): boolean {
 		if (this.isRunning) {
 			this._httpServer.close();
+
 			this._wsServer.close();
+
 			this._isServerOn = false;
 
 			this._serverTaskProvider.serverStop(
@@ -175,6 +196,7 @@ export class ServerGrouping extends Disposable {
 			);
 
 			this._showServerStatusMessage("Server Stopped");
+
 			this._onClose.fire();
 
 			if (
@@ -193,6 +215,7 @@ export class ServerGrouping extends Disposable {
 
 			return true;
 		}
+
 		return false;
 	}
 
@@ -208,10 +231,12 @@ export class ServerGrouping extends Disposable {
 		}
 
 		const port = this._connection.httpPort;
+
 		this._pendingServerWorkspaces.add(this.workspace?.uri.toString());
 
 		if (!this.isRunning) {
 			const freePort = await this._findFreePort(port);
+
 			await Promise.all([
 				this._httpServer.start(freePort),
 				this._wsServer.start(freePort + 1),
@@ -219,6 +244,7 @@ export class ServerGrouping extends Disposable {
 				this._connected();
 			});
 		}
+
 		this._pendingServerWorkspaces.delete(this.workspace?.uri.toString());
 	}
 
@@ -291,6 +317,7 @@ export class ServerGrouping extends Disposable {
 				debug: debug,
 				connection: this._connection,
 			};
+
 			await this.openServer();
 		} else {
 			this._onShouldLaunchEmbeddedPreview.fire({
@@ -313,18 +340,25 @@ export class ServerGrouping extends Disposable {
 			const sock = new net.Socket();
 
 			const host = this._connection.host;
+
 			sock.setTimeout(500);
+
 			sock.on("connect", function () {
 				sock.destroy();
+
 				port++;
+
 				sock.connect(port, host);
 			});
+
 			sock.on("error", function (e) {
 				resolve(port);
 			});
+
 			sock.on("timeout", function () {
 				resolve(port);
 			});
+
 			sock.connect(port, host);
 		});
 	}
@@ -341,6 +375,7 @@ export class ServerGrouping extends Disposable {
 				this._connection.httpPort,
 			),
 		);
+
 		await this._connection.connected();
 	}
 

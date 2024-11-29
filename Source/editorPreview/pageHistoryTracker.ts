@@ -15,18 +15,23 @@ export enum NavEditCommands {
 }
 export interface INavResponse {
 	actions: Array<NavEditCommands>;
+
 	address?: IAddress;
 }
 
 export interface IAddress {
 	connection: Connection;
+
 	path: string;
 }
 
 export class PageHistory extends Disposable {
 	private _history = new Array<IAddress>();
+
 	private _backstep = 0;
+
 	private _current_back_enabled = false;
+
 	private _current_forward_enabled = false;
 
 	/**
@@ -59,19 +64,23 @@ export class PageHistory extends Disposable {
 
 		if (this._backstep > 0) {
 			const path = this._history[this._backstep - 1];
+
 			this._backstep -= 1;
 
 			// if we reached 0, this means we can't go forwards anymore
 			if (this._backstep == 0) {
 				action.push(NavEditCommands.DISABLE_FORWARD);
+
 				this._current_forward_enabled = false;
 			}
 
 			// if reached the second-last entry, we can now go backwards
 			if (this._backstep == this._history.length - 2) {
 				action.push(NavEditCommands.ENABLE_BACK);
+
 				this._current_back_enabled = true;
 			}
+
 			return { actions: action, address: path };
 		} else {
 			return { actions: action };
@@ -86,18 +95,22 @@ export class PageHistory extends Disposable {
 
 		if (this._backstep < this._history.length - 1) {
 			const path = this._history[this._backstep + 1];
+
 			this._backstep += 1;
 
 			// if we reached the last entry, we can't go back any more
 			if (this._backstep == this._history.length - 1) {
 				action.push(NavEditCommands.DISABLE_BACK);
+
 				this._current_back_enabled = false;
 			}
 			// if we reached 1, we can now go forwards
 			if (this._backstep == 1) {
 				action.push(NavEditCommands.ENABLE_FORWARD);
+
 				this._current_forward_enabled = true;
 			}
+
 			return { actions: action, address: path };
 		} else {
 			return { actions: action };
@@ -117,6 +130,7 @@ export class PageHistory extends Disposable {
 		connection: Connection,
 	): INavResponse | undefined {
 		address = PathUtil.ConvertToPosixPath(address);
+
 		address = PathUtil.EscapePathParts(address);
 
 		const action = new Array<NavEditCommands>();
@@ -132,16 +146,23 @@ export class PageHistory extends Disposable {
 			// redirect of the previous, don't add to history
 			return undefined;
 		}
+
 		if (this._backstep > 0) {
 			this._history = this._history.slice(this._backstep);
 		}
+
 		if (this._history.length == 1) {
 			action.push(NavEditCommands.ENABLE_BACK);
+
 			this._current_back_enabled = true;
 		}
+
 		this._history.unshift({ path: address, connection });
+
 		this._backstep = 0;
+
 		action.push(NavEditCommands.DISABLE_FORWARD);
+
 		this._current_forward_enabled = false;
 
 		return { actions: action };
