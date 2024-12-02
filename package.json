@@ -268,7 +268,7 @@
 	"description": "Hosts a local server in your workspace for you to preview your webpages on.",
 	"devDependencies": {
 		"@types/mime": "4.0.0",
-		"@types/node": "22.10.0",
+		"@types/node": "22.10.1",
 		"@types/sinon": "17.0.3",
 		"@types/ws": "8.5.13",
 		"esbuild": "0.24.0",
