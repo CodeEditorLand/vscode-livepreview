@@ -265,16 +265,16 @@
 		"onTaskType:Live Preview"
 	],
 	"dependencies": {
-		"mime": "4.0.4",
+		"mime": "4.0.6",
 		"url": "0.11.4",
 		"ws": "8.18.0"
 	},
 	"devDependencies": {
 		"@types/mime": "4.0.0",
-		"@types/node": "22.10.1",
+		"@types/node": "22.10.5",
 		"@types/sinon": "17.0.3",
 		"@types/ws": "8.5.13",
-		"esbuild": "0.24.0",
+		"esbuild": "0.24.2",
 		"sinon": "19.0.2",
 		"ts-loader": "9.5.1"
 	},
