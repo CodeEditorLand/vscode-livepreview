@@ -271,9 +271,9 @@
 	},
 	"devDependencies": {
 		"@types/mime": "4.0.0",
-		"@types/node": "22.10.9",
+		"@types/node": "22.10.10",
 		"@types/sinon": "17.0.3",
-		"@types/ws": "8.5.13",
+		"@types/ws": "8.5.14",
 		"esbuild": "0.24.2",
 		"sinon": "19.0.2",
 		"ts-loader": "9.5.2"
