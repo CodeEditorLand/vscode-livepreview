@@ -11,6 +11,7 @@
 		"webpack": "webpack --mode development",
 		"webpack-dev": "webpack --mode development --watch"
 	},
+	"l10n": "./l10n",
 	"contributes": {
 		"commands": [
 			{
@@ -271,10 +272,10 @@
 	},
 	"devDependencies": {
 		"@types/mime": "4.0.0",
-		"@types/node": "22.13.0",
+		"@types/node": "22.13.1",
 		"@types/sinon": "17.0.3",
 		"@types/ws": "8.5.14",
-		"esbuild": "0.24.2",
+		"esbuild": "0.25.0",
 		"sinon": "19.0.2",
 		"ts-loader": "9.5.2"
 	},
@@ -287,6 +288,5 @@
 			"supported": false
 		},
 		"virtualWorkspaces": false
-	},
-	"l10n": "./l10n"
+	}
 }
